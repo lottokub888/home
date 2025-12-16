@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Lottery Web3 – KUB Prototype</title>
+<title>Lottery Web3 – KUB Testnet Only</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
 <style>
 :root{
---primary:#dc2626;--accent:#16a34a;--bg:#f9fafb;--dark:#111827;--card:#fff
+--primary:#dc2626;--accent:#16a34a;--bg:#f9fafb;--dark:#111827;--card:#ffffff
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui;background:var(--bg);color:#111}
@@ -39,7 +39,7 @@ margin-bottom:2rem
 .ghost{background:#e5e7eb}
 .warn{background:#f59e0b}
 
-input,select{
+input{
 width:100%;padding:.7rem;border-radius:14px;
 border:1px solid #ddd;margin-bottom:.6rem;font-size:1rem
 }
@@ -75,11 +75,11 @@ footer{text-align:center;color:#666;padding:2rem;font-size:.9rem}
 <div class="container">
 
 <section id="home" class="card">
-<h2>Web3 Lottery – Testnet</h2>
+<h2>KUB Testnet Only</h2>
 <p>
-✔ ซื้อขั้นต่ำ <b>0.00000020 KUB</b> ต่อชุด<br>
-✔ ใช้ <b>KUB Testnet (tKUB)</b><br>
-✔ โครงสร้างพร้อมสลับ Mainnet ภายหลัง
+✔ ใช้งานเฉพาะ <b>Bitkub Chain Testnet</b><br>
+✔ ชำระเงินด้วย <b>tKUB</b><br>
+✔ ไม่มี Mainnet / ไม่มีเงินจริง
 </p>
 </section>
 
@@ -109,12 +109,12 @@ footer{text-align:center;color:#666;padding:2rem;font-size:.9rem}
 </section>
 
 <section id="wallet" class="card" style="display:none">
-<h2>Wallet (KUB)</h2>
+<h2>Wallet (tKUB)</h2>
 
 <div class="wallet">
 <button class="primary" onclick="connectWallet()">Connect MetaMask</button>
 <span id="addr" class="pill" style="display:none"></span>
-<span id="net" class="pill"></span>
+<span class="pill">KUB Testnet</span>
 </div>
 
 <div class="grid">
@@ -126,7 +126,7 @@ footer{text-align:center;color:#666;padding:2rem;font-size:.9rem}
 
 <div class="card">
 <h3>ชำระเงิน</h3>
-<p class="muted">ขั้นต่ำต่อชุด: 0.00000020 KUB</p>
+<p class="muted">ขั้นต่ำต่อชุด: 0.00000020 tKUB</p>
 <p id="payTotal"></p>
 <button class="warn" onclick="pay()">ยืนยันชำระ</button>
 <pre id="tx" class="muted"></pre>
@@ -136,15 +136,15 @@ footer{text-align:center;color:#666;padding:2rem;font-size:.9rem}
 
 <section id="about" class="card" style="display:none">
 <ul>
-<li>ใช้งานจริงบน Testnet</li>
-<li>Mainnet เปิดใช้ได้โดยแก้ Config</li>
-<li>Prototype สำหรับเสนอหน่วยงาน</li>
+<li>รองรับเฉพาะ Bitkub Chain Testnet</li>
+<li>ไม่มีการโอนบน Mainnet</li>
+<li>Prototype สำหรับ Demo / เสนอหน่วยงาน</li>
 </ul>
 </section>
 
 </div>
 
-<footer>© Lottery Web3 Prototype</footer>
+<footer>© Lottery Web3 Prototype – Testnet Only</footer>
 
 <!-- MODAL -->
 <div id="modal" class="modal" onclick="closeModal(event)">
@@ -158,23 +158,9 @@ footer{text-align:center;color:#666;padding:2rem;font-size:.9rem}
 
 <script>
 /* ================= CONFIG ================= */
-// 🔁 เปลี่ยนเป็น true เมื่อจะใช้ Mainnet ภายหลัง
-const USE_MAINNET = false;
-
-// ราคาขั้นต่ำต่อชุด (KUB)
 const PRICE_PER_SET = 0.00000020;
-
-// ปลายทางรับเงิน
 const DEST = '0xa7488ce82af54e534c16f94dbf6d9ea9c0809de8';
 
-/* ============== NETWORKS ================= */
-const MAINNET={
-chainId:'0x8E4',
-chainName:'Bitkub Chain',
-nativeCurrency:{name:'KUB',symbol:'KUB',decimals:18},
-rpcUrls:['https://rpc.bitkubchain.io'],
-blockExplorerUrls:['https://www.kubscan.com']
-};
 const TESTNET={
 chainId:'0x8E5',
 chainName:'Bitkub Chain Testnet',
@@ -182,7 +168,6 @@ nativeCurrency:{name:'tKUB',symbol:'tKUB',decimals:18},
 rpcUrls:['https://rpc-testnet.bitkubchain.io'],
 blockExplorerUrls:['https://testnet.kubscan.com']
 };
-const ACTIVE_NET = USE_MAINNET ? MAINNET : TESTNET;
 
 /* ================= UI ================= */
 let cart=[], tableType=2, selected=[];
@@ -204,8 +189,8 @@ let s='',sets=0;
 cart.forEach(i=>{sets+=i.q;s+=`${i.n} x ${i.q} ชุด\n`;});
 const total = sets * PRICE_PER_SET;
 summary.innerText =
-s + `\nรวม ${sets} ชุด\nยอดชำระ ${total} KUB`;
-payTotal.innerText = `ยอดที่ต้องชำระ: ${total} KUB`;
+s + `\nรวม ${sets} ชุด\nยอดชำระ ${total} tKUB`;
+payTotal.innerText = `ยอดที่ต้องชำระ: ${total} tKUB`;
 }
 function openTable(t){
 tableType=t;selected=[];modal.style.display='flex';grid.innerHTML='';
@@ -232,28 +217,25 @@ function closeModal(e){if(e.target.id==='modal')modal.style.display='none'}
 let provider, signer, account;
 
 async function connectWallet(){
-if(!window.ethereum){alert('ติดตั้ง MetaMask');return;}
+if(!window.ethereum){alert('กรุณาติดตั้ง MetaMask');return;}
 await ethereum.request({method:'eth_requestAccounts'});
 try{
-await ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:ACTIVE_NET.chainId}]});
+await ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:TESTNET.chainId}]});
 }catch{
-await ethereum.request({method:'wallet_addEthereumChain',params:[ACTIVE_NET]});
+await ethereum.request({method:'wallet_addEthereumChain',params:[TESTNET]});
 }
 provider=new ethers.providers.Web3Provider(window.ethereum);
 signer=provider.getSigner();
 account=await signer.getAddress();
 addr.innerText=account.slice(0,6)+'...'+account.slice(-4);
 addr.style.display='inline-block';
-net.innerText=USE_MAINNET?'KUB Mainnet':'KUB Testnet';
 await refreshBalance();
 }
-
 async function refreshBalance(){
 if(!provider) return;
 const b=await provider.getBalance(account);
-bal.innerText=ethers.utils.formatEther(b)+' '+(USE_MAINNET?'KUB':'tKUB');
+bal.innerText=ethers.utils.formatEther(b)+' tKUB';
 }
-
 async function pay(){
 if(!signer){alert('เชื่อม Wallet');return;}
 let sets=cart.reduce((a,b)=>a+b.q,0);
@@ -263,7 +245,7 @@ const txr = await signer.sendTransaction({
 to:DEST,
 value:ethers.utils.parseEther(total.toString())
 });
-tx.innerText=`TX SENT\n${txr.hash}`;
+tx.innerText=`TX SENT (Testnet)\n${txr.hash}`;
 }
 </script>
 
