@@ -1,291 +1,172 @@
 <!doctype html>
 <html lang="th">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Lottery Web3 – Bitkub Chain</title>
-
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-
-<style>
-:root{
---red:#dc2626;--green:#16a34a;--bg:#f8fafc;
---dark:#0f172a;--card:#ffffff;--soft:#f1f5f9
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:system-ui;background:var(--bg);color:#111}
-header{
-background:linear-gradient(90deg,#7f1d1d,#dc2626,#ef4444);
-color:#fff;padding:1.3rem
-}
-nav{margin-top:.8rem;display:flex;gap:.6rem;flex-wrap:wrap}
-nav button{
-background:rgba(255,255,255,.15);
-border:none;color:#fff;padding:.5rem 1.3rem;
-border-radius:999px;font-weight:600;cursor:pointer
-}
-nav button.active{background:#fff;color:#b91c1c}
-
-.container{max-width:1200px;margin:auto;padding:2rem}
-.card{
-background:var(--card);border-radius:26px;
-padding:2rem;box-shadow:0 30px 60px rgba(0,0,0,.12);
-margin-bottom:2rem
-}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.6rem}
-
-.btn{border:none;border-radius:999px;padding:.7rem 1.6rem;font-weight:700;cursor:pointer}
-.primary{background:linear-gradient(90deg,#b91c1c,#ef4444);color:#fff}
-.secondary{background:#16a34a;color:#fff}
-.ghost{background:#e5e7eb}
-.warn{background:#f59e0b}
-
-input,select{
-width:100%;padding:.75rem;border-radius:14px;
-border:1px solid #ddd;margin-bottom:.7rem;font-size:1rem
-}
-
-.wallet{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
-.pill{
-background:var(--dark);color:#fff;
-border-radius:999px;padding:.35rem .9rem;font-size:.8rem
-}
-.badge-main{background:#2563eb}
-.badge-test{background:#16a34a}
-.muted{color:#64748b}
-
-.summary{
-background:#fff1f2;border-radius:18px;
-padding:1.1rem;white-space:pre-line;font-weight:600
-}
-
-/* modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:99}
-.modal-box{
-background:#fff;border-radius:24px;
-padding:1.6rem;max-width:580px;width:92%;
-max-height:80vh;overflow:auto
-}
-.num-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:12px}
-.num{
-background:var(--soft);border-radius:14px;
-padding:.8rem;text-align:center;font-weight:700;cursor:pointer
-}
-.num.active{background:#16a34a;color:#fff}
-
-footer{text-align:center;color:#64748b;padding:2rem;font-size:.9rem}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>แพลตฟอร์มสลากกินแบ่ง (ตัวอย่างถูกกฎหมาย)</title>
+  <style>
+body{font-family:'Segoe UI',system-ui,sans-serif;margin:0;background:linear-gradient(180deg,#fff5f5,#f7f7fb);color:#222}
+header{background:linear-gradient(90deg,#7f1d1d,#dc2626,#ef4444);color:#fff;padding:1.2rem}
+nav a{color:#fff;margin-right:1rem;text-decoration:none;font-weight:600}
+.container{max-width:900px;margin:auto;padding:1.5rem}
+.card{background:#fff;border-radius:26px;padding:2rem;box-shadow:0 25px 50px rgba(0,0,0,.12);margin-bottom:2rem}
+h1,h2,h3{margin-top:0}
+.muted{color:#666}
+input{padding:.8rem;border-radius:14px;border:1px solid #ddd;width:100%;margin-bottom:.6rem;font-size:1rem}
+.tabs{display:flex;gap:10px;margin-bottom:1rem}
+.tab{flex:1;border:none;border-radius:999px;padding:.6rem;font-weight:600;cursor:pointer}
+.tab.active{background:#ef4444;color:#fff}
+.summary{margin-top:1.2rem;padding:1rem;background:#fef2f2;border-radius:16px;font-weight:600;white-space:pre-line}
+button.primary{background:linear-gradient(90deg,#b91c1c,#ef4444);color:#fff;border:none;border-radius:999px;padding:.9rem 2.2rem;font-size:1.05rem;font-weight:600;cursor:pointer}
+button.secondary{background:#22c55e;color:#fff;border:none;border-radius:999px;padding:.6rem 1.6rem;font-size:1rem;font-weight:600;cursor:pointer;margin-right:.3rem}
+button.ghost{background:#e5e7eb;border:none;border-radius:999px;padding:.6rem 1.6rem;font-size:1rem;font-weight:600;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:10px;margin-top:1rem}
+.num{background:#f1f5f9;border-radius:14px;padding:.8rem;text-align:center;font-weight:600;cursor:pointer}
+.num.active{background:#22c55e;color:#fff}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:99}
+.modal-box{background:#fff;border-radius:22px;padding:1.5rem;max-width:500px;width:90%;max-height:80vh;overflow:auto}
 </style>
 </head>
-
 <body>
-
 <header>
-<h1>แพลตฟอร์มซื้อสลาก (Web3)</h1>
-<nav>
-<button class="active" onclick="showPage('home',this)">หน้าแรก</button>
-<button onclick="showPage('buy',this)">ซื้อสลาก</button>
-<button onclick="showPage('wallet',this)">Wallet</button>
-<button onclick="showPage('about',this)">ข้อมูล</button>
-</nav>
+  <nav class="container">
+    <a href="#home">หน้าแรก</a>
+    <a href="#buy">ซื้อเลข</a>
+    <a href="#check">เช็ครางวัล</a>
+    <a href="#market">รวมร้านค้า</a>
+    <a href="#about">เกี่ยวกับ</a>
+  </nav>
 </header>
 
-<div class="container">
+<section id="home" class="container">
+  <div class="card">
+    <h2>เลือกซื้อเลขสลาก</h2>
+    <p class="muted">เลือกกรอกทีละเลข หรือเปิดตารางซื้อเลขแบบเร็ว (ขั้นเทพ)</p>
 
-<section id="home" class="card">
-<h2>Bitkub Chain Mainnet & Testnet</h2>
-<p class="muted">
-แพลตฟอร์มตัวอย่างระดับ Startup รองรับ Web3  
-เชื่อมต่อ MetaMask | แสดงยอด | โอน KUB / tKUB
-</p>
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('two')">เลข 2 ตัว</button>
+      <button class="tab" onclick="showTab('three')">เลข 3 ตัว</button>
+    </div>
+
+    <div id="two" class="tab-content">
+      <h3>เลข 2 ตัว (กรอกเอง)</h3>
+      <input id="input2" maxlength="2" placeholder="เช่น 45" />
+      <label>จำนวนชุด (บาทละ 100)</label>
+      <input id="qty2" type="number" min="1" value="1" />
+      <button class="secondary" onclick="addItem(2)">ซื้อเพิ่ม</button>
+      <button class="ghost" onclick="openTable(2)">เปิดตารางเลข 2 ตัว</button>
+    </div>
+
+    <div id="three" class="tab-content" style="display:none">
+      <h3>เลข 3 ตัว (กรอกเอง)</h3>
+      <input id="input3" maxlength="3" placeholder="เช่น 456" />
+      <label>จำนวนชุด (บาทละ 100)</label>
+      <input id="qty3" type="number" min="1" value="1" />
+      <button class="secondary" onclick="addItem(3)">ซื้อเพิ่ม</button>
+      <button class="ghost" onclick="openTable(3)">เปิดตารางเลข 3 ตัว</button>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <div style="margin-top:1.5rem;text-align:center">
+      <button class="primary" onclick="submitReserve()">สรุปยอดทั้งหมด</button>
+    </div>
+  </div>
 </section>
 
-<section id="buy" class="card" style="display:none">
-<h2>เลือกซื้อสลาก</h2>
-
-<div class="grid">
-<div>
-<h3>กรอกเลข</h3>
-<input id="num" placeholder="เลข 2 หรือ 3 ตัว">
-<input id="qty" type="number" min="1" value="1">
-<button class="secondary" onclick="addManual()">เพิ่มรายการ</button>
-</div>
-
-<div>
-<h3>ตารางตัวเลข</h3>
-<button class="ghost" onclick="openTable(2)">เลข 2 ตัว</button>
-<button class="ghost" onclick="openTable(3)">เลข 3 ตัว</button>
-</div>
-</div>
-
-<button class="primary" style="margin-top:1rem" onclick="renderSummary()">สรุปรายการ</button>
-<div id="summary" class="summary" style="margin-top:1rem"></div>
-</section>
-
-<section id="wallet" class="card" style="display:none">
-<h2>Wallet</h2>
-
-<div class="wallet">
-<button class="primary" onclick="connectWallet()">Connect MetaMask</button>
-<button class="ghost" onclick="switchNetwork()">สลับเครือข่าย</button>
-<span id="addr" class="pill" style="display:none"></span>
-<span id="net" class="pill"></span>
-</div>
-
-<div class="grid">
-<div class="card">
-<h3>ยอดคงเหลือ</h3>
-<p id="bal">-</p>
-<button class="ghost" onclick="refreshBalance()">Refresh</button>
-</div>
-
-<div class="card">
-<h3>ชำระเงิน</h3>
-<p id="payTotal" class="muted"></p>
-<button class="warn" onclick="pay()">ยืนยันโอน</button>
-<pre id="tx" class="muted"></pre>
-</div>
-</div>
-</section>
-
-<section id="about" class="card" style="display:none">
-<ul>
-<li>รองรับ Bitkub Chain Mainnet / Testnet</li>
-<li>เชื่อมต่อผ่าน MetaMask</li>
-<li>เหมาะสำหรับ Prototype / Demo</li>
-</ul>
-</section>
-
-</div>
-
-<footer>© Web3 Lottery Platform</footer>
-
-<!-- MODAL -->
+<!-- MODAL TABLE -->
 <div id="modal" class="modal" onclick="closeModal(event)">
-<div class="modal-box">
-<h3 id="mtitle"></h3>
-<div id="grid" class="num-grid"></div>
-<input id="mqty" type="number" min="1" value="1">
-<button class="secondary" onclick="confirmTable()">เพิ่มรายการ</button>
+  <div class="modal-box">
+    <h3 id="modalTitle"></h3>
+    <div class="grid" id="modalGrid"></div>
+    <label>จำนวนชุด (บาทละ 100)</label>
+    <input id="modalQty" type="number" min="1" value="1" />
+    <div style="text-align:center;margin-top:1rem">
+      <button class="secondary" onclick="confirmTable()">เพิ่มรายการ</button>
+    </div>
+  </div>
 </div>
-</div>
+
+<section id="buy" class="container">
+  <div class="card">
+    <h2>เลือกซื้อเลขสลาก</h2>
+    <p class="muted">เลือกซื้อทีละรายการ กด “ซื้อเพิ่ม” เพื่อเพิ่มเลขใหม่ ไม่แสดงตารางรวมในหน้าเดียว</p>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('two')">เลข 2 ตัว</button>
+      <button class="tab" onclick="showTab('three')">เลข 3 ตัว</button>
+    </div>
+
+    <div id="two" class="tab-content">
+      <h3>เลข 2 ตัว</h3>
+      <input id="input2" maxlength="2" placeholder="เช่น 45" />
+      <label>จำนวนชุด (บาทละ 100)</label>
+      <input id="qty2" type="number" min="1" value="1" />
+      <button class="secondary" onclick="addItem(2)">ซื้อเพิ่ม</button>
+    </div>
+
+    <div id="three" class="tab-content" style="display:none">
+      <h3>เลข 3 ตัว</h3>
+      <input id="input3" maxlength="3" placeholder="เช่น 456" />
+      <label>จำนวนชุด (บาทละ 100)</label>
+      <input id="qty3" type="number" min="1" value="1" />
+      <button class="secondary" onclick="addItem(3)">ซื้อเพิ่ม</button>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <div style="margin-top:1.5rem;text-align:center">
+      <button class="primary" onclick="submitReserve()">สรุปยอดทั้งหมด</button>
+    </div>
+  </div>
+</section>
+
+<section id="check" class="container">
+  <div class="card">
+    <h2>เช็ครางวัลสลากกินแบ่ง</h2>
+    <input placeholder="กรอกเลขสลากของคุณ" />
+    <br><br>
+    <button onclick="alert('ฟังก์ชันเช็ครางวัล (Demo)')">ตรวจรางวัล</button>
+  </div>
+</section>
+
+<section id="market" class="container">
+  <div class="card">
+    <h2>รวมร้านขายสลาก (Marketplace)</h2>
+    <ul>
+      <li>ร้าน A – ติดต่อ: 08x-xxx-xxxx</li>
+      <li>ร้าน B – ติดต่อ: 09x-xxx-xxxx</li>
+    </ul>
+  </div>
+</section>
+
+<section id="about" class="container">
+  <div class="card">
+    <h2>ข้อกำหนดทางกฎหมาย</h2>
+    <p>เว็บไซต์นี้ไม่รับเงิน ไม่เป็นผู้ขาย และไม่เกี่ยวข้องกับสำนักงานสลากกินแบ่งรัฐบาล</p>
+  </div>
+</section>
+
+<footer>
+  © Demo Lottery Platform – ใช้เพื่อการศึกษา
+</footer>
 
 <script>
-/* ========= CONFIG ========= */
-const PRICE = 0.00000020;
-const DEST = '0xa7488ce82af54e534c16f94dbf6d9ea9c0809de8';
+let cart=[];let tableType=2;let tableSelected=[];
 
-const MAINNET={
-chainId:'0x8E4',
-chainName:'Bitkub Chain',
-nativeCurrency:{name:'KUB',symbol:'KUB',decimals:18},
-rpcUrls:['https://rpc.bitkubchain.io'],
-blockExplorerUrls:['https://www.kubscan.com']
-};
+function showTab(id){document.getElementById('two').style.display=id==='two'?'block':'none';document.getElementById('three').style.display=id==='three'?'block':'none';document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');}
 
-const TESTNET={
-chainId:'0x8E5',
-chainName:'Bitkub Chain Testnet',
-nativeCurrency:{name:'tKUB',symbol:'tKUB',decimals:18},
-rpcUrls:['https://rpc-testnet.bitkubchain.io'],
-blockExplorerUrls:['https://testnet.kubscan.com']
-};
+function addItem(type){const num=type===2?input2.value:input3.value;const qty=type===2?+qty2.value:+qty3.value;if((type===2&&num.length!==2)||(type===3&&num.length!==3)||qty<1){alert('ข้อมูลไม่ถูกต้อง');return;}cart.push({type:type+' ตัว',num,qty});alert('เพิ่มรายการแล้ว');}
 
-/* ========= STATE ========= */
-let cart=[], tableType=2, selected=[];
-let provider, signer, account, currentNet='test';
+function openTable(type){tableType=type;tableSelected=[];modal.style.display='flex';modalGrid.innerHTML='';modalTitle.innerText=type===2?'ตารางเลข 2 ตัว':'ตารางเลข 3 ตัว';const max=type===2?100:1000;for(let i=0;i<max;i++){let n=String(i).padStart(type===2?2:3,'0');let d=document.createElement('div');d.className='num';d.innerText=n;d.onclick=()=>{d.classList.toggle('active');tableSelected.includes(n)?tableSelected.splice(tableSelected.indexOf(n),1):tableSelected.push(n)};modalGrid.appendChild(d)}}
 
-/* ========= UI ========= */
-function showPage(id,btn){
-document.querySelectorAll('section').forEach(s=>s.style.display='none');
-document.getElementById(id).style.display='block';
-document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-btn.classList.add('active');
-}
+function confirmTable(){const qty=+modalQty.value;if(qty<1||tableSelected.length===0){alert('กรุณาเลือกเลข');return;}tableSelected.forEach(n=>cart.push({type:tableType+' ตัว',num:n,qty}));modal.style.display='none';alert('เพิ่มจากตารางเรียบร้อย')}
 
-function addManual(){
-if(!(num.value.length===2||num.value.length===3)) return alert('เลขไม่ถูกต้อง');
-cart.push({n:num.value,q:+qty.value});
-alert('เพิ่มแล้ว');
-}
-
-function renderSummary(){
-let sets=0,s='';
-cart.forEach(i=>{sets+=i.q;s+=`${i.n} x ${i.q}\n`;});
-const total=sets*PRICE;
-summary.innerText=s+`\nรวม ${sets} ชุด\n${total} ${currentNet==='main'?'KUB':'tKUB'}`;
-payTotal.innerText=`ยอดที่ต้องชำระ: ${total}`;
-}
-
-/* ========= TABLE ========= */
-function openTable(t){
-tableType=t;selected=[];modal.style.display='flex';grid.innerHTML='';
-mtitle.innerText=`ตารางเลข ${t} ตัว`;
-let max=t===2?100:1000;
-for(let i=0;i<max;i++){
-let n=String(i).padStart(t,'0');
-let d=document.createElement('div');
-d.className='num';d.innerText=n;
-d.onclick=()=>{d.classList.toggle('active');
-selected.includes(n)?selected.splice(selected.indexOf(n),1):selected.push(n)};
-grid.appendChild(d);
-}
-}
-function confirmTable(){
-selected.forEach(n=>cart.push({n,q:+mqty.value}));
-modal.style.display='none';
-}
 function closeModal(e){if(e.target.id==='modal')modal.style.display='none'}
 
-/* ========= WEB3 ========= */
-async function connectWallet(){
-await ethereum.request({method:'eth_requestAccounts'});
-provider=new ethers.providers.Web3Provider(window.ethereum,'any');
-signer=provider.getSigner();
-account=await signer.getAddress();
-addr.innerText=account.slice(0,6)+'...'+account.slice(-4);
-addr.style.display='inline-block';
-await detectNetwork();
-await refreshBalance();
-}
-
-async function detectNetwork(){
-const net=await provider.getNetwork();
-currentNet=net.chainId===2276?'main':'test';
-net.innerText=currentNet==='main'?'MAINNET':'TESTNET';
-net.className='pill '+(currentNet==='main'?'badge-main':'badge-test');
-}
-
-async function switchNetwork(){
-const cfg=currentNet==='main'?TESTNET:MAINNET;
-try{
-await ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:cfg.chainId}]});
-}catch{
-await ethereum.request({method:'wallet_addEthereumChain',params:[cfg]});
-}
-}
-
-async function refreshBalance(){
-const b=await provider.getBalance(account);
-bal.innerText=ethers.utils.formatEther(b)+' '+(currentNet==='main'?'KUB':'tKUB');
-}
-
-async function pay(){
-let sets=cart.reduce((a,b)=>a+b.q,0);
-if(!sets) return alert('ไม่มีรายการ');
-const total=sets*PRICE;
-const tx=await signer.sendTransaction({
-to:DEST,
-value:ethers.utils.parseEther(total.toString())
-});
-txEl.innerText=tx.hash;
-}
-
-/* ========= EVENTS ========= */
-if(window.ethereum){
-ethereum.on('chainChanged',()=>connectWallet());
-ethereum.on('accountsChanged',()=>connectWallet());
-}
+function submitReserve(){if(cart.length===0){alert('ยังไม่มีรายการ');return;}let total=0,text='';cart.forEach(i=>{const sum=i.qty*100;total+=sum;text+=`${i.type} ${i.num} x ${i.qty} = ${sum.toLocaleString()} บาท
+`;});text+=`
+ยอดรวมทั้งหมด: ${total.toLocaleString()} บาท`;summary.innerText=text}
 </script>
-
 </body>
 </html>
