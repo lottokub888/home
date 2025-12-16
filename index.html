@@ -3,207 +3,225 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Lottery with History | Web3 (Bitkub Chain)</title>
+<title>Lottery Web3 | Bitkub Chain</title>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
 <style>
 :root{
---primary:#dc2626;--primary-dark:#991b1b;
---secondary:#16a34a;--bg:#f8fafc;
---card:#ffffff;--text:#111827;--muted:#6b7280;
+--primary:#dc2626;--dark:#991b1b;--green:#16a34a;
+--bg:#f8fafc;--card:#ffffff;--text:#111827;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
-header{background:linear-gradient(90deg,var(--primary-dark),var(--primary));color:#fff}
-nav{display:flex;justify-content:space-between;align-items:center}
-nav a{color:#fff;margin-right:1rem;text-decoration:none;font-weight:600}
-
+header{background:linear-gradient(90deg,var(--dark),var(--primary));color:#fff}
 .container{max-width:1200px;margin:auto;padding:1.5rem}
+nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+nav a{color:#fff;margin-right:1rem;text-decoration:none;font-weight:700}
+
 .card{
-  background:var(--card);border-radius:24px;padding:1.8rem;
-  box-shadow:0 20px 40px rgba(0,0,0,.1);margin-bottom:1.8rem
+ background:var(--card);border-radius:24px;padding:1.8rem;
+ box-shadow:0 20px 40px rgba(0,0,0,.1);margin-bottom:1.6rem
 }
 
 .wallet{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
 .wallet button,select{
-  border:none;border-radius:999px;padding:.45rem 1rem;
-  font-weight:700;cursor:pointer
+ border:none;border-radius:999px;padding:.45rem 1rem;
+ font-weight:700;cursor:pointer
 }
-.wallet button{background:#fff;color:#991b1b}
+.wallet button{background:#fff;color:var(--dark)}
 select{background:#e5e7eb}
 
 .pill{
-  background:#111;color:#fff;border-radius:999px;
-  padding:.25rem .7rem;font-size:.8rem
+ background:#111;color:#fff;border-radius:999px;
+ padding:.25rem .7rem;font-size:.8rem
 }
 
 input{
-  width:100%;padding:.8rem;border-radius:12px;
-  border:1px solid #d1d5db;margin-bottom:.6rem
+ width:100%;padding:.8rem;border-radius:12px;
+ border:1px solid #d1d5db;margin-bottom:.6rem
 }
+
 button.primary{
-  background:var(--primary);color:#fff;border:none;
-  border-radius:999px;padding:.8rem 2rem;font-weight:700
+ background:var(--primary);color:#fff;border:none;
+ border-radius:999px;padding:.8rem 2rem;font-weight:700
 }
 button.secondary{
-  background:var(--secondary);color:#fff;border:none;
-  border-radius:999px;padding:.6rem 1.6rem;font-weight:700
+ background:var(--green);color:#fff;border:none;
+ border-radius:999px;padding:.6rem 1.6rem;font-weight:700
 }
 button.ghost{
-  background:#e5e7eb;border:none;border-radius:999px;
-  padding:.6rem 1.6rem;font-weight:700
+ background:#e5e7eb;border:none;border-radius:999px;
+ padding:.6rem 1.6rem;font-weight:700
 }
 
 .tabs{display:flex;gap:.5rem;margin-bottom:1rem}
 .tab{
-  flex:1;padding:.6rem;border-radius:999px;
-  background:#e5e7eb;font-weight:700;text-align:center;cursor:pointer
+ flex:1;padding:.6rem;border-radius:999px;
+ background:#e5e7eb;font-weight:700;text-align:center;cursor:pointer
 }
 .tab.active{background:var(--primary);color:#fff}
 
-.summary{white-space:pre-line;background:#fff1f2;
-padding:1rem;border-radius:14px;font-weight:600}
+.summary{
+ white-space:pre-line;background:#fff1f2;
+ padding:1rem;border-radius:14px;font-weight:600
+}
 
 .modal{
-  position:fixed;inset:0;background:rgba(0,0,0,.5);
-  display:none;align-items:center;justify-content:center;z-index:100
+ position:fixed;inset:0;background:rgba(0,0,0,.5);
+ display:none;align-items:center;justify-content:center;z-index:100
 }
 .modal-box{
-  background:#fff;border-radius:22px;padding:1.5rem;
-  max-width:560px;width:90%;max-height:80vh;overflow:auto
+ background:#fff;border-radius:22px;padding:1.5rem;
+ max-width:560px;width:90%;max-height:80vh;overflow:auto
 }
 .num-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));
-  gap:8px;margin-top:1rem
+ display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));
+ gap:8px;margin-top:1rem
 }
 .num{
-  background:#e5e7eb;border-radius:10px;
-  padding:.7rem;text-align:center;font-weight:700;cursor:pointer
+ background:#e5e7eb;border-radius:10px;
+ padding:.7rem;text-align:center;font-weight:700;cursor:pointer
 }
-.num.selected{background:var(--secondary);color:#fff}
+.num.selected{background:var(--green);color:#fff}
 </style>
 </head>
 
 <body>
 
 <header>
-  <div class="container">
-    <nav>
-      <div>
-        <a href="#buy">ซื้อสลาก</a>
-        <a href="#history">ประวัติย้อนหลัง</a>
-      </div>
+<div class="container">
+<nav>
+<div>
+<a href="#buy">ซื้อสลาก</a>
+<a href="#history">ประวัติ</a>
+</div>
 
-      <div class="wallet">
-        <button onclick="connectWallet()">Connect MetaMask</button>
-        <select onchange="switchNetwork(this.value)">
-          <option value="">Network</option>
-          <option value="mainnet">KUB Mainnet</option>
-          <option value="testnet">KUB Testnet</option>
-        </select>
-        <span id="addr" class="pill" style="display:none"></span>
-        <span id="net" class="pill" style="display:none"></span>
-        <span id="bal" class="pill" style="display:none"></span>
-      </div>
-    </nav>
-  </div>
+<div class="wallet">
+<button onclick="connectWallet()">Connect MetaMask</button>
+<select onchange="switchNetwork(this.value)">
+<option value="">Network</option>
+<option value="mainnet">KUB Mainnet</option>
+<option value="testnet">KUB Testnet</option>
+</select>
+<span id="addr" class="pill" style="display:none"></span>
+<span id="net" class="pill" style="display:none"></span>
+<span id="bal" class="pill" style="display:none"></span>
+</div>
+</nav>
+</div>
 </header>
 
 <div class="container">
 
 <section id="buy" class="card">
-  <h2>ซื้อสลาก</h2>
+<h2>ซื้อสลาก</h2>
 
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('manual',this)">กรอกเอง</div>
-    <div class="tab" onclick="switchTab('table',this)">จากตาราง</div>
-  </div>
+<div class="tabs">
+<div class="tab active" onclick="switchTab('manual',this)">กรอกเอง</div>
+<div class="tab" onclick="switchTab('table',this)">ตาราง</div>
+</div>
 
-  <div id="manual">
-    <input id="manualNum" placeholder="เลข 2 หรือ 3 ตัว">
-    <input id="manualQty" type="number" min="1" value="1">
-    <button class="secondary" onclick="addManual()">เพิ่มรายการ</button>
-  </div>
+<div id="manual">
+<input id="manualNum" placeholder="เลข 2 หรือ 3 ตัว">
+<input id="manualQty" type="number" min="1" value="1">
+<button class="secondary" onclick="addManual()">เพิ่ม</button>
+</div>
 
-  <div id="table" style="display:none">
-    <button class="ghost" onclick="openTable(2)">เลข 2 ตัว</button>
-    <button class="ghost" onclick="openTable(3)">เลข 3 ตัว</button>
-  </div>
+<div id="table" style="display:none">
+<button class="ghost" onclick="openTable(2)">เลข 2 ตัว</button>
+<button class="ghost" onclick="openTable(3)">เลข 3 ตัว</button>
+</div>
 
-  <div class="summary" id="summary">ยังไม่มีรายการ</div>
-  <button class="primary" onclick="checkout()">สรุป (Simulation)</button>
+<div class="summary" id="summary">ยังไม่มีรายการ</div>
+<button class="primary" onclick="checkout()">ซื้อ (0.00000020 KUB)</button>
 </section>
 
 <section id="history" class="card">
-  <h2>ประวัติการซื้อ</h2>
-  <div id="history">ยังไม่มีประวัติ</div>
+<h2>ประวัติการซื้อ</h2>
+<div id="historyBox">ยังไม่มีประวัติ</div>
 </section>
 
 </div>
 
 <!-- MODAL -->
 <div id="modal" class="modal" onclick="e=>e.target.id==='modal'&&(modal.style.display='none')">
-  <div class="modal-box">
-    <h3 id="modalTitle"></h3>
-    <div id="modalGrid" class="num-grid"></div>
-    <input id="modalQty" type="number" min="1" value="1">
-    <button class="secondary" onclick="confirmTable()">เพิ่มจากตาราง</button>
-  </div>
+<div class="modal-box">
+<h3 id="modalTitle"></h3>
+<div id="modalGrid" class="num-grid"></div>
+<input id="modalQty" type="number" min="1" value="1">
+<button class="secondary" onclick="confirmTable()">เพิ่ม</button>
+</div>
 </div>
 
 <script>
-/* ==== NETWORK ==== */
+/* ===== CONFIG ===== */
+const RECEIVE_ADDRESS =
+"0x5b54f26ddce0b5ff743358c0729b43c954a8e309";
+const PRICE_KUB = "0.00000020";
+
+/* ===== NETWORK ===== */
 const MAINNET={
- chainId:'0x8E4',chainName:'Bitkub Chain',
+ chainId:'0x8E4',
+ chainName:'Bitkub Chain',
  nativeCurrency:{name:'KUB',symbol:'KUB',decimals:18},
  rpcUrls:['https://rpc.bitkubchain.io'],
  blockExplorerUrls:['https://www.kubscan.com']
 };
 const TESTNET={
- chainId:'0x8E5',chainName:'Bitkub Chain Testnet',
+ chainId:'0x8E5',
+ chainName:'Bitkub Chain Testnet',
  nativeCurrency:{name:'tKUB',symbol:'tKUB',decimals:18},
  rpcUrls:['https://rpc-testnet.bitkubchain.io'],
  blockExplorerUrls:['https://testnet.kubscan.com']
 };
 
 let provider,signer,account;
-let cart=[],historyList=JSON.parse(localStorage.getItem('history')||'[]');
+let cart=[];
+let historyList=JSON.parse(localStorage.getItem('history')||'[]');
 let selected=[],tableType=2;
 
-/* ==== WALLET ==== */
+/* ===== WALLET ===== */
 async function connectWallet(){
- if(!window.ethereum){alert('กรุณาติดตั้ง MetaMask');return;}
+ if(!window.ethereum){alert("ติดตั้ง MetaMask");return;}
  await ethereum.request({method:'eth_requestAccounts'});
- provider=new ethers.providers.Web3Provider(window.ethereum);
+ provider=new ethers.providers.Web3Provider(window.ethereum,'any');
  signer=provider.getSigner();
  account=await signer.getAddress();
  addr.innerText=account.slice(0,6)+'...'+account.slice(-4);
- addr.style.display=net.style.display=bal.style.display='inline-block';
- updateWallet();
+ addr.style.display='inline-block';
+ await updateWallet();
 }
 
 async function switchNetwork(v){
- if(!v) return;
+ if(!v)return;
  const p=v==='mainnet'?MAINNET:TESTNET;
  try{
-  await ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:p.chainId}]});
+  await ethereum.request({
+   method:'wallet_switchEthereumChain',
+   params:[{chainId:p.chainId}]
+  });
  }catch{
-  await ethereum.request({method:'wallet_addEthereumChain',params:[p]});
+  await ethereum.request({
+   method:'wallet_addEthereumChain',
+   params:[p]
+  });
  }
- provider=new ethers.providers.Web3Provider(window.ethereum);
+ provider=new ethers.providers.Web3Provider(window.ethereum,'any');
  signer=provider.getSigner();
  updateWallet();
 }
 
 async function updateWallet(){
  const n=await provider.getNetwork();
- net.innerText=n.chainId===2276?'Mainnet':'Testnet';
+ net.innerText=n.chainId===2276?'KUB Mainnet':'KUB Testnet';
+ net.style.display='inline-block';
  const b=await provider.getBalance(account);
  bal.innerText=ethers.utils.formatEther(b)+(n.chainId===2276?' KUB':' tKUB');
+ bal.style.display='inline-block';
 }
 
-/* ==== BUY ==== */
+/* ===== BUY ===== */
 function switchTab(id,el){
  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
  el.classList.add('active');
@@ -219,7 +237,7 @@ function addManual(){
 
 function openTable(t){
  tableType=t;selected=[];modal.style.display='flex';
- modalTitle.innerText=`ตารางเลข ${t} ตัว`;modalGrid.innerHTML='';
+ modalTitle.innerText=`เลข ${t} ตัว`;modalGrid.innerHTML='';
  for(let i=0;i<(t===2?100:1000);i++){
   let n=String(i).padStart(t,'0');
   let d=document.createElement('div');
@@ -238,22 +256,47 @@ function confirmTable(){
 
 function render(){
  if(!cart.length){summary.innerText='ยังไม่มีรายการ';return;}
- let t='',sum=0;
- cart.forEach(i=>{sum+=i.q*100;t+=`${i.n} x ${i.q}\n`});
- summary.innerText=t+`\nรวม ${sum} บาท`;
+ let t='';
+ cart.forEach(i=>t+=`${i.n} x ${i.q}\n`);
+ summary.innerText=t+`\nราคา ${PRICE_KUB} KUB`;
 }
 
-function checkout(){
- if(!cart.length)return;
- historyList.push({d:new Date().toLocaleString(),i:cart});
- localStorage.setItem('history',JSON.stringify(historyList));
- cart=[];render();renderHistory();
- alert('บันทึกประวัติแล้ว (Simulation)');
+/* ===== CHECKOUT ===== */
+async function checkout(){
+ if(!cart.length)return alert("ไม่มีรายการ");
+ if(!signer)return alert("กรุณาเชื่อมต่อ Wallet");
+
+ try{
+  const tx=await signer.sendTransaction({
+   to:RECEIVE_ADDRESS,
+   value:ethers.utils.parseEther(PRICE_KUB)
+  });
+  alert("กำลังส่ง TX:\n"+tx.hash);
+  await tx.wait();
+
+  historyList.push({
+   d:new Date().toLocaleString(),
+   tx:tx.hash,
+   i:cart
+  });
+  localStorage.setItem('history',JSON.stringify(historyList));
+  cart=[];render();renderHistory();
+  alert("ชำระเงินสำเร็จ");
+ }catch(e){
+  alert("ยกเลิกหรือผิดพลาด");
+ }
 }
 
+/* ===== HISTORY ===== */
 function renderHistory(){
- if(!historyList.length){history.innerText='ยังไม่มีประวัติ';return;}
- history.innerHTML=historyList.map(h=>`${h.d}<br>${h.i.map(i=>i.n+' x '+i.q).join('<br>')}`).join('<hr>');
+ if(!historyList.length){
+  historyBox.innerText='ยังไม่มีประวัติ';return;
+ }
+ historyBox.innerHTML=historyList.map(h=>
+  `<b>${h.d}</b><br>
+   TX: ${h.tx}<br>
+   ${h.i.map(i=>i.n+' x '+i.q).join('<br>')}`
+ ).join('<hr>');
 }
 renderHistory();
 </script>
