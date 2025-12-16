@@ -9,9 +9,10 @@
 
 <style>
 :root{
- --primary:#dc2626;--dark:#991b1b;--green:#16a34a;
- --bg:#f8fafc;--card:#ffffff;--text:#111827;
+--primary:#dc2626;--dark:#991b1b;--green:#16a34a;
+--bg:#f8fafc;--card:#ffffff;--text:#111827;
 }
+*{box-sizing:border-box}
 body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
 header{background:linear-gradient(90deg,var(--dark),var(--primary));color:#fff}
 .container{max-width:1200px;margin:auto;padding:1.5rem}
@@ -19,17 +20,15 @@ nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap
 nav a{color:#fff;margin-right:1rem;text-decoration:none;font-weight:700}
 
 .card{
- background:var(--card);border-radius:22px;padding:1.6rem;
+ background:var(--card);border-radius:24px;padding:1.8rem;
  box-shadow:0 20px 40px rgba(0,0,0,.1);margin-bottom:1.6rem
 }
 
 .wallet{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
-.wallet button,select{
- border:none;border-radius:999px;padding:.45rem 1rem;
- font-weight:700;cursor:pointer
+.wallet button{
+ border:none;border-radius:999px;padding:.5rem 1.2rem;
+ font-weight:700;cursor:pointer;background:#fff;color:var(--dark)
 }
-.wallet button{background:#fff;color:var(--dark)}
-select{background:#e5e7eb}
 
 .pill{
  background:#111;color:#fff;border-radius:999px;
@@ -65,6 +64,24 @@ button.ghost{
  white-space:pre-line;background:#fff1f2;
  padding:1rem;border-radius:14px;font-weight:600
 }
+
+.modal{
+ position:fixed;inset:0;background:rgba(0,0,0,.5);
+ display:none;align-items:center;justify-content:center;z-index:100
+}
+.modal-box{
+ background:#fff;border-radius:22px;padding:1.5rem;
+ max-width:560px;width:90%;max-height:80vh;overflow:auto
+}
+.num-grid{
+ display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));
+ gap:8px;margin-top:1rem
+}
+.num{
+ background:#e5e7eb;border-radius:10px;
+ padding:.7rem;text-align:center;font-weight:700;cursor:pointer
+}
+.num.selected{background:var(--green);color:#fff}
 </style>
 </head>
 
@@ -75,16 +92,11 @@ button.ghost{
 <nav>
 <div>
 <a href="#buy">ซื้อสลาก</a>
-<a href="#history">ประวัติ</a>
+<a href="#history">ประวัติย้อนหลัง</a>
 </div>
 
 <div class="wallet">
-<button onclick="connectWallet()">Connect MetaMask</button>
-<select onchange="switchNetwork(this.value)">
-<option value="">Network</option>
-<option value="mainnet">KUB Mainnet</option>
-<option value="testnet">KUB Testnet</option>
-</select>
+<button onclick="connectWallet()">Connect / Switch KUB</button>
 <span id="addr" class="pill" style="display:none"></span>
 <span id="net" class="pill" style="display:none"></span>
 <span id="bal" class="pill" style="display:none"></span>
@@ -99,7 +111,7 @@ button.ghost{
 <h2>ซื้อสลาก</h2>
 
 <div class="tabs">
-<div class="tab active" onclick="switchTab('manual',this)">กรอกเลข</div>
+<div class="tab active" onclick="switchTab('manual',this)">กรอกเอง</div>
 <div class="tab" onclick="switchTab('table',this)">ตาราง</div>
 </div>
 
@@ -110,7 +122,8 @@ button.ghost{
 </div>
 
 <div id="table" style="display:none">
-<button class="ghost" onclick="alert('Demo ตาราง')">ตารางเลข</button>
+<button class="ghost" onclick="openTable(2)">เลข 2 ตัว</button>
+<button class="ghost" onclick="openTable(3)">เลข 3 ตัว</button>
 </div>
 
 <div class="summary" id="summary">ยังไม่มีรายการ</div>
@@ -124,11 +137,20 @@ button.ghost{
 
 </div>
 
+<div id="modal" class="modal" onclick="e=>e.target.id==='modal'&&(modal.style.display='none')">
+<div class="modal-box">
+<h3 id="modalTitle"></h3>
+<div id="modalGrid" class="num-grid"></div>
+<input id="modalQty" type="number" min="1" value="1">
+<button class="secondary" onclick="confirmTable()">เพิ่ม</button>
+</div>
+</div>
+
 <script>
 /* ===== CONFIG ===== */
-const RECEIVE_ADDRESS =
-"0x5b54f26ddce0b5ff743358c0729b43c954a8e309";
-const PRICE_KUB = "0.00000020";
+const RECEIVE_ADDRESS="0x5b54f26ddce0b5ff743358c0729b43c954a8e309";
+const ADMIN_ADDRESS="0xb4dc0dab8cf925d41e2315495e3181aa43577263";
+const PRICE_KUB="0.00000020";
 
 /* ===== NETWORK ===== */
 const MAINNET={
@@ -138,69 +160,51 @@ const MAINNET={
  rpcUrls:["https://rpc.bitkubchain.io"],
  blockExplorerUrls:["https://www.kubscan.com"]
 };
-const TESTNET={
- chainId:"0x8E5",
- chainName:"Bitkub Chain Testnet",
- nativeCurrency:{name:"tKUB",symbol:"tKUB",decimals:18},
- rpcUrls:["https://rpc-testnet.bitkubchain.io"],
- blockExplorerUrls:["https://testnet.kubscan.com"]
-};
 
-let provider, signer, account;
+let provider,signer,account;
 let cart=[];
 let historyList=JSON.parse(localStorage.getItem("history")||"[]");
 
-/* ===== CONNECT WALLET (FIXED) ===== */
+/* ===== CONNECT + FORCE MAINNET ===== */
 async function connectWallet(){
- try{
-  if(!window.ethereum) return alert("กรุณาติดตั้ง MetaMask");
+ if(!window.ethereum)return alert("ติดตั้ง MetaMask");
+ await ethereum.request({method:"eth_requestAccounts"});
+ provider=new ethers.providers.Web3Provider(window.ethereum,"any");
+ signer=provider.getSigner();
+ account=await signer.getAddress();
+ await ensureMainnet();
+ await updateWallet();
+}
 
-  const accs = await ethereum.request({method:"eth_requestAccounts"});
-  account = accs[0];
-
-  provider = new ethers.providers.Web3Provider(window.ethereum,"any");
-  signer = provider.getSigner();
-
-  const net = await provider.getNetwork();
-  if(net.chainId!==2276 && net.chainId!==2277){
-   const useMainnet = confirm("ต้องการ Mainnet?\nCancel = Testnet");
-   await switchNetwork(useMainnet?"mainnet":"testnet");
+async function ensureMainnet(){
+ const n=await provider.getNetwork();
+ if(n.chainId!==2276){
+  try{
+   await ethereum.request({
+    method:"wallet_switchEthereumChain",
+    params:[{chainId:MAINNET.chainId}]
+   });
+  }catch{
+   await ethereum.request({
+    method:"wallet_addEthereumChain",
+    params:[MAINNET]
+   });
   }
-
-  updateWalletUI();
- }catch(e){
-  alert("ยกเลิกการเชื่อมต่อ");
+  provider=new ethers.providers.Web3Provider(window.ethereum,"any");
+  signer=provider.getSigner();
  }
 }
 
-async function switchNetwork(v){
- const p = v==="mainnet"?MAINNET:TESTNET;
- try{
-  await ethereum.request({
-   method:"wallet_switchEthereumChain",
-   params:[{chainId:p.chainId}]
-  });
- }catch{
-  await ethereum.request({
-   method:"wallet_addEthereumChain",
-   params:[p]
-  });
- }
- provider = new ethers.providers.Web3Provider(window.ethereum,"any");
- signer = provider.getSigner();
+async function updateWallet(){
+ const n=await provider.getNetwork();
+ addr.innerText=account.slice(0,6)+"..."+account.slice(-4);
+ net.innerText=n.chainId===2276?"KUB Mainnet":"Wrong Network";
+ const b=await provider.getBalance(account);
+ bal.innerText=ethers.utils.formatEther(b)+" KUB";
+ addr.style.display=net.style.display=bal.style.display="inline-block";
 }
 
-async function updateWalletUI(){
- const net = await provider.getNetwork();
- const bal = await provider.getBalance(account);
- addr.innerText = account.slice(0,6)+"..."+account.slice(-4);
- netSpan = net.chainId===2276?"KUB Mainnet":"KUB Testnet";
- net.innerText = netSpan;
- bal.innerText = ethers.utils.formatEther(bal)+(net.chainId===2276?" KUB":" tKUB");
- addr.style.display = net.style.display = bal.style.display = "inline-block";
-}
-
-/* ===== BUY ===== */
+/* ===== UI ===== */
 function switchTab(id,el){
  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
  el.classList.add("active");
@@ -209,61 +213,65 @@ function switchTab(id,el){
 }
 
 function addManual(){
- const n=manualNum.value.trim();
- const q=+manualQty.value;
- if(!/^\d{2,3}$/.test(n)||q<1) return alert("ข้อมูลไม่ถูกต้อง");
- cart.push({n,q});
- render();
+ const n=manualNum.value.trim(),q=+manualQty.value;
+ if(!/^\d{2,3}$/.test(n))return alert("เลขไม่ถูกต้อง");
+ cart.push({n,q});render();
+}
+
+function openTable(t){
+ modal.style.display="flex";modalTitle.innerText=`เลข ${t} ตัว`;
+ modalGrid.innerHTML="";selected=[];
+ for(let i=0;i<(t===2?100:1000);i++){
+  const n=String(i).padStart(t,"0");
+  const d=document.createElement("div");
+  d.className="num";d.innerText=n;
+  d.onclick=()=>d.classList.toggle("selected");
+  modalGrid.appendChild(d);
+ }
+}
+
+function confirmTable(){
+ document.querySelectorAll(".num.selected").forEach(d=>{
+  cart.push({n:d.innerText,q:+modalQty.value});
+ });
+ modal.style.display="none";render();
 }
 
 function render(){
- if(!cart.length){summary.innerText="ยังไม่มีรายการ";return;}
- let t="";
- cart.forEach(i=>t+=`${i.n} x ${i.q}\n`);
- summary.innerText = t + `\nราคา ${PRICE_KUB} KUB`;
+ if(!cart.length)return summary.innerText="ยังไม่มีรายการ";
+ summary.innerText=
+  cart.map(i=>`${i.n} x ${i.q}`).join("\n")+
+  `\n\nราคา ${PRICE_KUB} KUB`;
 }
 
-/* ===== PAY ===== */
+/* ===== CHECKOUT ===== */
 async function checkout(){
- if(!cart.length) return alert("ไม่มีรายการ");
- if(!signer) return alert("กรุณาเชื่อมต่อ Wallet");
-
- try{
-  const tx = await signer.sendTransaction({
-   to: RECEIVE_ADDRESS,
-   value: ethers.utils.parseEther(PRICE_KUB)
-  });
-  await tx.wait();
-
-  historyList.push({
-   d:new Date().toLocaleString(),
-   tx:tx.hash,
-   i:cart
-  });
-  localStorage.setItem("history",JSON.stringify(historyList));
-  cart=[];render();renderHistory();
-  alert("ชำระเงินสำเร็จ");
- }catch{
-  alert("ยกเลิกหรือผิดพลาด");
- }
+ if(!cart.length||!signer)return alert("เชื่อมต่อ Wallet");
+ const tx=await signer.sendTransaction({
+  to:RECEIVE_ADDRESS,
+  value:ethers.utils.parseEther(PRICE_KUB)
+ });
+ await tx.wait();
+ historyList.push({
+  d:new Date().toLocaleString(),
+  tx:tx.hash,
+  i:cart
+ });
+ localStorage.setItem("history",JSON.stringify(historyList));
+ cart=[];render();renderHistory();
+ alert("ชำระเงินสำเร็จ");
 }
 
+/* ===== HISTORY ===== */
 function renderHistory(){
- if(!historyList.length){
-  historyBox.innerText="ยังไม่มีประวัติ";return;
- }
- historyBox.innerHTML = historyList.map(h=>
+ if(!historyList.length)return historyBox.innerText="ยังไม่มีประวัติ";
+ historyBox.innerHTML=historyList.map(h=>
   `<b>${h.d}</b><br>
-   TX: ${h.tx}<br>
+   <a href="https://www.kubscan.com/tx/${h.tx}" target="_blank">ดูบน Kubscan</a><br>
    ${h.i.map(i=>i.n+" x "+i.q).join("<br>")}`
  ).join("<hr>");
 }
 renderHistory();
-
-if(window.ethereum){
- ethereum.on("accountsChanged",()=>location.reload());
- ethereum.on("chainChanged",()=>location.reload());
-}
 </script>
 
 </body>
