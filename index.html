@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Lottery Web3 – KUB Testnet Only</title>
 
+<!-- Ethers v5 -->
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
 <style>
@@ -75,9 +76,9 @@ footer{text-align:center;color:#666;padding:2rem;font-size:.9rem}
 <div class="container">
 
 <section id="home" class="card">
-<h2>KUB Testnet Only</h2>
+<h2>Bitkub Chain Testnet Only</h2>
 <p>
-✔ ใช้งานเฉพาะ <b>Bitkub Chain Testnet</b><br>
+✔ ใช้งานเฉพาะ <b>https://testnet.kubscan.com</b><br>
 ✔ ชำระเงินด้วย <b>tKUB</b><br>
 ✔ ไม่มี Mainnet / ไม่มีเงินจริง
 </p>
@@ -169,14 +170,17 @@ rpcUrls:['https://rpc-testnet.bitkubchain.io'],
 blockExplorerUrls:['https://testnet.kubscan.com']
 };
 
-/* ================= UI ================= */
+/* ================= UI STATE ================= */
 let cart=[], tableType=2, selected=[];
+
+/* ================= UI ================= */
 function showPage(id,btn){
 document.querySelectorAll('section').forEach(s=>s.style.display='none');
 document.getElementById(id).style.display='block';
 document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
 btn.classList.add('active');
 }
+
 function addManual(){
 const n=num.value.trim();
 const q=+qty.value;
@@ -184,14 +188,15 @@ if(!(n.length===2||n.length===3)||q<1){alert('เลขไม่ถูกต้�
 cart.push({n,q});
 alert('เพิ่มแล้ว');
 }
+
 function renderSummary(){
 let s='',sets=0;
 cart.forEach(i=>{sets+=i.q;s+=`${i.n} x ${i.q} ชุด\n`;});
 const total = sets * PRICE_PER_SET;
-summary.innerText =
-s + `\nรวม ${sets} ชุด\nยอดชำระ ${total} tKUB`;
+summary.innerText = s + `\nรวม ${sets} ชุด\nยอดชำระ ${total} tKUB`;
 payTotal.innerText = `ยอดที่ต้องชำระ: ${total} tKUB`;
 }
+
 function openTable(t){
 tableType=t;selected=[];modal.style.display='flex';grid.innerHTML='';
 mtitle.innerText=`ตารางเลข ${t} ตัว`;
@@ -205,37 +210,52 @@ selected.includes(n)?selected.splice(selected.indexOf(n),1):selected.push(n)};
 grid.appendChild(d);
 }
 }
+
 function confirmTable(){
 let q=+mqty.value;
 if(selected.length===0||q<1){alert('เลือกเลข');return;}
 selected.forEach(n=>cart.push({n,q}));
 modal.style.display='none';
 }
+
 function closeModal(e){if(e.target.id==='modal')modal.style.display='none'}
 
 /* ================= WEB3 ================= */
-let provider, signer, account;
+let provider=null, signer=null, account=null;
 
 async function connectWallet(){
 if(!window.ethereum){alert('กรุณาติดตั้ง MetaMask');return;}
+
 await ethereum.request({method:'eth_requestAccounts'});
+
 try{
-await ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:TESTNET.chainId}]});
+await ethereum.request({
+method:'wallet_switchEthereumChain',
+params:[{chainId:TESTNET.chainId}]
+});
 }catch{
-await ethereum.request({method:'wallet_addEthereumChain',params:[TESTNET]});
+await ethereum.request({
+method:'wallet_addEthereumChain',
+params:[TESTNET]
+});
 }
-provider=new ethers.providers.Web3Provider(window.ethereum);
+
+provider=new ethers.providers.Web3Provider(window.ethereum,'any');
 signer=provider.getSigner();
 account=await signer.getAddress();
+
 addr.innerText=account.slice(0,6)+'...'+account.slice(-4);
 addr.style.display='inline-block';
+
 await refreshBalance();
 }
+
 async function refreshBalance(){
-if(!provider) return;
+if(!provider||!account){bal.innerText='-';return;}
 const b=await provider.getBalance(account);
 bal.innerText=ethers.utils.formatEther(b)+' tKUB';
 }
+
 async function pay(){
 if(!signer){alert('เชื่อม Wallet');return;}
 let sets=cart.reduce((a,b)=>a+b.q,0);
@@ -246,6 +266,12 @@ to:DEST,
 value:ethers.utils.parseEther(total.toString())
 });
 tx.innerText=`TX SENT (Testnet)\n${txr.hash}`;
+}
+
+/* ================= EVENTS ================= */
+if(window.ethereum){
+ethereum.on('chainChanged',()=>{connectWallet();});
+ethereum.on('accountsChanged',()=>{connectWallet();});
 }
 </script>
 
