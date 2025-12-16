@@ -49,6 +49,17 @@ button.secondary{
  background:var(--green);color:#fff;border:none;
  border-radius:999px;padding:.6rem 1.6rem;font-weight:700
 }
+button.ghost{
+ background:#e5e7eb;border:none;border-radius:999px;
+ padding:.6rem 1.6rem;font-weight:700
+}
+
+.tabs{display:flex;gap:.5rem;margin-bottom:1rem}
+.tab{
+ flex:1;padding:.6rem;border-radius:999px;
+ background:#e5e7eb;font-weight:700;text-align:center;cursor:pointer
+}
+.tab.active{background:var(--primary);color:#fff}
 
 .summary{
  white-space:pre-line;background:#fff1f2;
@@ -75,7 +86,7 @@ button.secondary{
 <option value="testnet">KUB Testnet</option>
 </select>
 <span id="addr" class="pill" style="display:none"></span>
-<span id="netLabel" class="pill" style="display:none"></span>
+<span id="net" class="pill" style="display:none"></span>
 <span id="bal" class="pill" style="display:none"></span>
 </div>
 </nav>
@@ -86,9 +97,21 @@ button.secondary{
 
 <section id="buy" class="card">
 <h2>ซื้อสลาก</h2>
+
+<div class="tabs">
+<div class="tab active" onclick="switchTab('manual',this)">กรอกเลข</div>
+<div class="tab" onclick="switchTab('table',this)">ตาราง</div>
+</div>
+
+<div id="manual">
 <input id="manualNum" placeholder="เลข 2 หรือ 3 ตัว">
 <input id="manualQty" type="number" min="1" value="1">
 <button class="secondary" onclick="addManual()">เพิ่ม</button>
+</div>
+
+<div id="table" style="display:none">
+<button class="ghost" onclick="alert('Demo ตาราง')">ตารางเลข</button>
+</div>
 
 <div class="summary" id="summary">ยังไม่มีรายการ</div>
 <button class="primary" onclick="checkout()">ซื้อ (0.00000020 KUB)</button>
@@ -103,19 +126,20 @@ button.secondary{
 
 <script>
 /* ===== CONFIG ===== */
-const RECEIVE_ADDRESS="0x5b54f26ddce0b5ff743358c0729b43c954a8e309";
-const PRICE_KUB="0.00000020";
+const RECEIVE_ADDRESS =
+"0x5b54f26ddce0b5ff743358c0729b43c954a8e309";
+const PRICE_KUB = "0.00000020";
 
 /* ===== NETWORK ===== */
 const MAINNET={
- chainId:"96",
+ chainId:"0x8E4",
  chainName:"Bitkub Chain",
  nativeCurrency:{name:"KUB",symbol:"KUB",decimals:18},
  rpcUrls:["https://rpc.bitkubchain.io"],
  blockExplorerUrls:["https://www.kubscan.com"]
 };
 const TESTNET={
- chainId:"25925",
+ chainId:"0x8E5",
  chainName:"Bitkub Chain Testnet",
  nativeCurrency:{name:"tKUB",symbol:"tKUB",decimals:18},
  rpcUrls:["https://rpc-testnet.bitkubchain.io"],
@@ -126,26 +150,31 @@ let provider, signer, account;
 let cart=[];
 let historyList=JSON.parse(localStorage.getItem("history")||"[]");
 
-/* ===== CONNECT WALLET ===== */
+/* ===== CONNECT WALLET (FIXED) ===== */
 async function connectWallet(){
- if(!window.ethereum) return alert("กรุณาติดตั้ง MetaMask");
-
  try{
-  const accs=await ethereum.request({method:"eth_requestAccounts"});
-  account=accs[0];
+  if(!window.ethereum) return alert("กรุณาติดตั้ง MetaMask");
 
-  provider=new ethers.providers.Web3Provider(window.ethereum,"any");
-  signer=provider.getSigner();
+  const accs = await ethereum.request({method:"eth_requestAccounts"});
+  account = accs[0];
 
-  await updateWalletUI();
- }catch{
+  provider = new ethers.providers.Web3Provider(window.ethereum,"any");
+  signer = provider.getSigner();
+
+  const net = await provider.getNetwork();
+  if(net.chainId!==2276 && net.chainId!==2277){
+   const useMainnet = confirm("ต้องการ Mainnet?\nCancel = Testnet");
+   await switchNetwork(useMainnet?"mainnet":"testnet");
+  }
+
+  updateWalletUI();
+ }catch(e){
   alert("ยกเลิกการเชื่อมต่อ");
  }
 }
 
 async function switchNetwork(v){
- if(!v) return;
- const p=v==="mainnet"?MAINNET:TESTNET;
+ const p = v==="mainnet"?MAINNET:TESTNET;
  try{
   await ethereum.request({
    method:"wallet_switchEthereumChain",
@@ -157,29 +186,28 @@ async function switchNetwork(v){
    params:[p]
   });
  }
- provider=new ethers.providers.Web3Provider(window.ethereum,"any");
- signer=provider.getSigner();
- updateWalletUI();
+ provider = new ethers.providers.Web3Provider(window.ethereum,"any");
+ signer = provider.getSigner();
 }
 
 async function updateWalletUI(){
- const network=await provider.getNetwork();
- const balance=await provider.getBalance(account);
-
- document.getElementById("addr").innerText=
-  account.slice(0,6)+"..."+account.slice(-4);
-
- document.getElementById("netLabel").innerText=
-  network.chainId===2276?"KUB Mainnet":"KUB Testnet";
-
- document.getElementById("bal").innerText=
-  ethers.utils.formatEther(balance)+
-  (network.chainId===2276?" KUB":" tKUB");
-
- addr.style.display=netLabel.style.display=bal.style.display="inline-block";
+ const net = await provider.getNetwork();
+ const bal = await provider.getBalance(account);
+ addr.innerText = account.slice(0,6)+"..."+account.slice(-4);
+ netSpan = net.chainId===2276?"KUB Mainnet":"KUB Testnet";
+ net.innerText = netSpan;
+ bal.innerText = ethers.utils.formatEther(bal)+(net.chainId===2276?" KUB":" tKUB");
+ addr.style.display = net.style.display = bal.style.display = "inline-block";
 }
 
 /* ===== BUY ===== */
+function switchTab(id,el){
+ document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+ el.classList.add("active");
+ manual.style.display=id==="manual"?"block":"none";
+ table.style.display=id==="table"?"block":"none";
+}
+
 function addManual(){
  const n=manualNum.value.trim();
  const q=+manualQty.value;
@@ -190,9 +218,9 @@ function addManual(){
 
 function render(){
  if(!cart.length){summary.innerText="ยังไม่มีรายการ";return;}
- summary.innerText=
-  cart.map(i=>`${i.n} x ${i.q}`).join("\n")+
-  `\n\nราคา ${PRICE_KUB} KUB`;
+ let t="";
+ cart.forEach(i=>t+=`${i.n} x ${i.q}\n`);
+ summary.innerText = t + `\nราคา ${PRICE_KUB} KUB`;
 }
 
 /* ===== PAY ===== */
@@ -201,9 +229,9 @@ async function checkout(){
  if(!signer) return alert("กรุณาเชื่อมต่อ Wallet");
 
  try{
-  const tx=await signer.sendTransaction({
-   to:RECEIVE_ADDRESS,
-   value:ethers.utils.parseEther(PRICE_KUB)
+  const tx = await signer.sendTransaction({
+   to: RECEIVE_ADDRESS,
+   value: ethers.utils.parseEther(PRICE_KUB)
   });
   await tx.wait();
 
@@ -220,12 +248,11 @@ async function checkout(){
  }
 }
 
-/* ===== HISTORY ===== */
 function renderHistory(){
  if(!historyList.length){
   historyBox.innerText="ยังไม่มีประวัติ";return;
  }
- historyBox.innerHTML=historyList.map(h=>
+ historyBox.innerHTML = historyList.map(h=>
   `<b>${h.d}</b><br>
    TX: ${h.tx}<br>
    ${h.i.map(i=>i.n+" x "+i.q).join("<br>")}`
