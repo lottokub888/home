@@ -3,84 +3,99 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Lottery Web3 – KUB Testnet Only</title>
+<title>Lottery Web3 – Bitkub Chain</title>
 
-<!-- Ethers v5 -->
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
 <style>
 :root{
---primary:#dc2626;--accent:#16a34a;--bg:#f9fafb;--dark:#111827;--card:#ffffff
+--red:#dc2626;--green:#16a34a;--bg:#f8fafc;
+--dark:#0f172a;--card:#ffffff;--soft:#f1f5f9
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui;background:var(--bg);color:#111}
 header{
 background:linear-gradient(90deg,#7f1d1d,#dc2626,#ef4444);
-color:#fff;padding:1.2rem
+color:#fff;padding:1.3rem
 }
-nav{margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap}
+nav{margin-top:.8rem;display:flex;gap:.6rem;flex-wrap:wrap}
 nav button{
 background:rgba(255,255,255,.15);
-border:none;color:#fff;padding:.45rem 1.2rem;
+border:none;color:#fff;padding:.5rem 1.3rem;
 border-radius:999px;font-weight:600;cursor:pointer
 }
 nav button.active{background:#fff;color:#b91c1c}
 
 .container{max-width:1200px;margin:auto;padding:2rem}
 .card{
-background:var(--card);border-radius:24px;
-padding:2rem;box-shadow:0 25px 50px rgba(0,0,0,.12);
+background:var(--card);border-radius:26px;
+padding:2rem;box-shadow:0 30px 60px rgba(0,0,0,.12);
 margin-bottom:2rem
 }
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.6rem}
 
-.btn{border:none;border-radius:999px;padding:.7rem 1.6rem;font-weight:600;cursor:pointer}
+.btn{border:none;border-radius:999px;padding:.7rem 1.6rem;font-weight:700;cursor:pointer}
 .primary{background:linear-gradient(90deg,#b91c1c,#ef4444);color:#fff}
 .secondary{background:#16a34a;color:#fff}
 .ghost{background:#e5e7eb}
 .warn{background:#f59e0b}
 
-input{
-width:100%;padding:.7rem;border-radius:14px;
-border:1px solid #ddd;margin-bottom:.6rem;font-size:1rem
+input,select{
+width:100%;padding:.75rem;border-radius:14px;
+border:1px solid #ddd;margin-bottom:.7rem;font-size:1rem
 }
 
-.wallet{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
-.pill{background:#111827;color:#fff;border-radius:999px;padding:.3rem .8rem;font-size:.8rem}
-.muted{color:#6b7280}
-.summary{background:#fef2f2;border-radius:18px;padding:1rem;white-space:pre-line}
+.wallet{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.pill{
+background:var(--dark);color:#fff;
+border-radius:999px;padding:.35rem .9rem;font-size:.8rem
+}
+.badge-main{background:#2563eb}
+.badge-test{background:#16a34a}
+.muted{color:#64748b}
 
-footer{text-align:center;color:#666;padding:2rem;font-size:.9rem}
+.summary{
+background:#fff1f2;border-radius:18px;
+padding:1.1rem;white-space:pre-line;font-weight:600
+}
 
 /* modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:99}
-.modal-box{background:#fff;border-radius:22px;padding:1.5rem;max-width:560px;width:90%;max-height:80vh;overflow:auto}
-.num-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:10px}
-.num{background:#f3f4f6;border-radius:14px;padding:.7rem;text-align:center;font-weight:600;cursor:pointer}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:99}
+.modal-box{
+background:#fff;border-radius:24px;
+padding:1.6rem;max-width:580px;width:92%;
+max-height:80vh;overflow:auto
+}
+.num-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:12px}
+.num{
+background:var(--soft);border-radius:14px;
+padding:.8rem;text-align:center;font-weight:700;cursor:pointer
+}
 .num.active{background:#16a34a;color:#fff}
+
+footer{text-align:center;color:#64748b;padding:2rem;font-size:.9rem}
 </style>
 </head>
 
 <body>
 
 <header>
-<h1>เว็บไซต์ซื้อสลากกินแบ่งรัฐบาล (Web3 Prototype)</h1>
+<h1>แพลตฟอร์มซื้อสลาก (Web3)</h1>
 <nav>
 <button class="active" onclick="showPage('home',this)">หน้าแรก</button>
 <button onclick="showPage('buy',this)">ซื้อสลาก</button>
 <button onclick="showPage('wallet',this)">Wallet</button>
-<button onclick="showPage('about',this)">กฎหมาย</button>
+<button onclick="showPage('about',this)">ข้อมูล</button>
 </nav>
 </header>
 
 <div class="container">
 
 <section id="home" class="card">
-<h2>Bitkub Chain Testnet Only</h2>
-<p>
-✔ ใช้งานเฉพาะ <b>https://testnet.kubscan.com</b><br>
-✔ ชำระเงินด้วย <b>tKUB</b><br>
-✔ ไม่มี Mainnet / ไม่มีเงินจริง
+<h2>Bitkub Chain Mainnet & Testnet</h2>
+<p class="muted">
+แพลตฟอร์มตัวอย่างระดับ Startup รองรับ Web3  
+เชื่อมต่อ MetaMask | แสดงยอด | โอน KUB / tKUB
 </p>
 </section>
 
@@ -89,9 +104,9 @@ footer{text-align:center;color:#666;padding:2rem;font-size:.9rem}
 
 <div class="grid">
 <div>
-<h3>กรอกเลขเอง</h3>
-<input id="num" placeholder="เลข 2 หรือ 3 ตัว"/>
-<input id="qty" type="number" value="1" min="1"/>
+<h3>กรอกเลข</h3>
+<input id="num" placeholder="เลข 2 หรือ 3 ตัว">
+<input id="qty" type="number" min="1" value="1">
 <button class="secondary" onclick="addManual()">เพิ่มรายการ</button>
 </div>
 
@@ -102,20 +117,18 @@ footer{text-align:center;color:#666;padding:2rem;font-size:.9rem}
 </div>
 </div>
 
-<div style="margin-top:1rem">
-<button class="primary" onclick="renderSummary()">สรุปรายการ</button>
-</div>
-
+<button class="primary" style="margin-top:1rem" onclick="renderSummary()">สรุปรายการ</button>
 <div id="summary" class="summary" style="margin-top:1rem"></div>
 </section>
 
 <section id="wallet" class="card" style="display:none">
-<h2>Wallet (tKUB)</h2>
+<h2>Wallet</h2>
 
 <div class="wallet">
 <button class="primary" onclick="connectWallet()">Connect MetaMask</button>
+<button class="ghost" onclick="switchNetwork()">สลับเครือข่าย</button>
 <span id="addr" class="pill" style="display:none"></span>
-<span class="pill">KUB Testnet</span>
+<span id="net" class="pill"></span>
 </div>
 
 <div class="grid">
@@ -127,9 +140,8 @@ footer{text-align:center;color:#666;padding:2rem;font-size:.9rem}
 
 <div class="card">
 <h3>ชำระเงิน</h3>
-<p class="muted">ขั้นต่ำต่อชุด: 0.00000020 tKUB</p>
-<p id="payTotal"></p>
-<button class="warn" onclick="pay()">ยืนยันชำระ</button>
+<p id="payTotal" class="muted"></p>
+<button class="warn" onclick="pay()">ยืนยันโอน</button>
 <pre id="tx" class="muted"></pre>
 </div>
 </div>
@@ -137,30 +149,38 @@ footer{text-align:center;color:#666;padding:2rem;font-size:.9rem}
 
 <section id="about" class="card" style="display:none">
 <ul>
-<li>รองรับเฉพาะ Bitkub Chain Testnet</li>
-<li>ไม่มีการโอนบน Mainnet</li>
-<li>Prototype สำหรับ Demo / เสนอหน่วยงาน</li>
+<li>รองรับ Bitkub Chain Mainnet / Testnet</li>
+<li>เชื่อมต่อผ่าน MetaMask</li>
+<li>เหมาะสำหรับ Prototype / Demo</li>
 </ul>
 </section>
 
 </div>
 
-<footer>© Lottery Web3 Prototype – Testnet Only</footer>
+<footer>© Web3 Lottery Platform</footer>
 
 <!-- MODAL -->
 <div id="modal" class="modal" onclick="closeModal(event)">
 <div class="modal-box">
 <h3 id="mtitle"></h3>
 <div id="grid" class="num-grid"></div>
-<input id="mqty" type="number" value="1" min="1"/>
-<button class="secondary" onclick="confirmTable()">เพิ่ม</button>
+<input id="mqty" type="number" min="1" value="1">
+<button class="secondary" onclick="confirmTable()">เพิ่มรายการ</button>
 </div>
 </div>
 
 <script>
-/* ================= CONFIG ================= */
-const PRICE_PER_SET = 0.00000020;
+/* ========= CONFIG ========= */
+const PRICE = 0.00000020;
 const DEST = '0xa7488ce82af54e534c16f94dbf6d9ea9c0809de8';
+
+const MAINNET={
+chainId:'0x8E4',
+chainName:'Bitkub Chain',
+nativeCurrency:{name:'KUB',symbol:'KUB',decimals:18},
+rpcUrls:['https://rpc.bitkubchain.io'],
+blockExplorerUrls:['https://www.kubscan.com']
+};
 
 const TESTNET={
 chainId:'0x8E5',
@@ -170,10 +190,11 @@ rpcUrls:['https://rpc-testnet.bitkubchain.io'],
 blockExplorerUrls:['https://testnet.kubscan.com']
 };
 
-/* ================= UI STATE ================= */
+/* ========= STATE ========= */
 let cart=[], tableType=2, selected=[];
+let provider, signer, account, currentNet='test';
 
-/* ================= UI ================= */
+/* ========= UI ========= */
 function showPage(id,btn){
 document.querySelectorAll('section').forEach(s=>s.style.display='none');
 document.getElementById(id).style.display='block';
@@ -182,21 +203,20 @@ btn.classList.add('active');
 }
 
 function addManual(){
-const n=num.value.trim();
-const q=+qty.value;
-if(!(n.length===2||n.length===3)||q<1){alert('เลขไม่ถูกต้อง');return;}
-cart.push({n,q});
+if(!(num.value.length===2||num.value.length===3)) return alert('เลขไม่ถูกต้อง');
+cart.push({n:num.value,q:+qty.value});
 alert('เพิ่มแล้ว');
 }
 
 function renderSummary(){
-let s='',sets=0;
-cart.forEach(i=>{sets+=i.q;s+=`${i.n} x ${i.q} ชุด\n`;});
-const total = sets * PRICE_PER_SET;
-summary.innerText = s + `\nรวม ${sets} ชุด\nยอดชำระ ${total} tKUB`;
-payTotal.innerText = `ยอดที่ต้องชำระ: ${total} tKUB`;
+let sets=0,s='';
+cart.forEach(i=>{sets+=i.q;s+=`${i.n} x ${i.q}\n`;});
+const total=sets*PRICE;
+summary.innerText=s+`\nรวม ${sets} ชุด\n${total} ${currentNet==='main'?'KUB':'tKUB'}`;
+payTotal.innerText=`ยอดที่ต้องชำระ: ${total}`;
 }
 
+/* ========= TABLE ========= */
 function openTable(t){
 tableType=t;selected=[];modal.style.display='flex';grid.innerHTML='';
 mtitle.innerText=`ตารางเลข ${t} ตัว`;
@@ -210,68 +230,60 @@ selected.includes(n)?selected.splice(selected.indexOf(n),1):selected.push(n)};
 grid.appendChild(d);
 }
 }
-
 function confirmTable(){
-let q=+mqty.value;
-if(selected.length===0||q<1){alert('เลือกเลข');return;}
-selected.forEach(n=>cart.push({n,q}));
+selected.forEach(n=>cart.push({n,q:+mqty.value}));
 modal.style.display='none';
 }
-
 function closeModal(e){if(e.target.id==='modal')modal.style.display='none'}
 
-/* ================= WEB3 ================= */
-let provider=null, signer=null, account=null;
-
+/* ========= WEB3 ========= */
 async function connectWallet(){
-if(!window.ethereum){alert('กรุณาติดตั้ง MetaMask');return;}
-
 await ethereum.request({method:'eth_requestAccounts'});
-
-try{
-await ethereum.request({
-method:'wallet_switchEthereumChain',
-params:[{chainId:TESTNET.chainId}]
-});
-}catch{
-await ethereum.request({
-method:'wallet_addEthereumChain',
-params:[TESTNET]
-});
-}
-
 provider=new ethers.providers.Web3Provider(window.ethereum,'any');
 signer=provider.getSigner();
 account=await signer.getAddress();
-
 addr.innerText=account.slice(0,6)+'...'+account.slice(-4);
 addr.style.display='inline-block';
-
+await detectNetwork();
 await refreshBalance();
 }
 
+async function detectNetwork(){
+const net=await provider.getNetwork();
+currentNet=net.chainId===2276?'main':'test';
+net.innerText=currentNet==='main'?'MAINNET':'TESTNET';
+net.className='pill '+(currentNet==='main'?'badge-main':'badge-test');
+}
+
+async function switchNetwork(){
+const cfg=currentNet==='main'?TESTNET:MAINNET;
+try{
+await ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:cfg.chainId}]});
+}catch{
+await ethereum.request({method:'wallet_addEthereumChain',params:[cfg]});
+}
+}
+
 async function refreshBalance(){
-if(!provider||!account){bal.innerText='-';return;}
 const b=await provider.getBalance(account);
-bal.innerText=ethers.utils.formatEther(b)+' tKUB';
+bal.innerText=ethers.utils.formatEther(b)+' '+(currentNet==='main'?'KUB':'tKUB');
 }
 
 async function pay(){
-if(!signer){alert('เชื่อม Wallet');return;}
 let sets=cart.reduce((a,b)=>a+b.q,0);
-if(sets===0){alert('ไม่มีรายการ');return;}
-const total = sets * PRICE_PER_SET;
-const txr = await signer.sendTransaction({
+if(!sets) return alert('ไม่มีรายการ');
+const total=sets*PRICE;
+const tx=await signer.sendTransaction({
 to:DEST,
 value:ethers.utils.parseEther(total.toString())
 });
-tx.innerText=`TX SENT (Testnet)\n${txr.hash}`;
+txEl.innerText=tx.hash;
 }
 
-/* ================= EVENTS ================= */
+/* ========= EVENTS ========= */
 if(window.ethereum){
-ethereum.on('chainChanged',()=>{connectWallet();});
-ethereum.on('accountsChanged',()=>{connectWallet();});
+ethereum.on('chainChanged',()=>connectWallet());
+ethereum.on('accountsChanged',()=>connectWallet());
 }
 </script>
 
