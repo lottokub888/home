@@ -9,51 +9,57 @@
 
 <style>
 :root{
- --primary:#dc2626;--dark:#991b1b;--green:#16a34a;
- --bg:#f8fafc;--card:#ffffff;--text:#111827;
+--primary:#dc2626;--dark:#991b1b;--green:#16a34a;
+--bg:#f8fafc;--card:#fff;--text:#111827;
 }
+*{box-sizing:border-box}
 body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text)}
 header{background:linear-gradient(90deg,var(--dark),var(--primary));color:#fff}
-.container{max-width:1200px;margin:auto;padding:1.5rem}
-nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
-nav a{color:#fff;margin-right:1rem;text-decoration:none;font-weight:700}
+.container{max-width:1100px;margin:auto;padding:1.5rem}
+
+button{
+border:none;border-radius:999px;
+padding:.7rem 1.6rem;font-weight:700;cursor:pointer
+}
+.primary{background:var(--primary);color:#fff}
+.secondary{background:var(--green);color:#fff}
+.ghost{background:#e5e7eb}
 
 .card{
- background:var(--card);border-radius:22px;padding:1.6rem;
- box-shadow:0 20px 40px rgba(0,0,0,.1);margin-bottom:1.6rem
+background:var(--card);border-radius:24px;padding:1.6rem;
+box-shadow:0 20px 40px rgba(0,0,0,.1);margin-bottom:1.5rem
 }
 
-.wallet{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
-.wallet button,select{
- border:none;border-radius:999px;padding:.45rem 1rem;
- font-weight:700;cursor:pointer
-}
-.wallet button{background:#fff;color:var(--dark)}
-select{background:#e5e7eb}
-
+.wallet{display:flex;gap:.5rem;flex-wrap:wrap}
 .pill{
- background:#111;color:#fff;border-radius:999px;
- padding:.25rem .7rem;font-size:.8rem
+background:#111;color:#fff;border-radius:999px;
+padding:.3rem .8rem;font-size:.8rem
 }
 
-input{
- width:100%;padding:.8rem;border-radius:12px;
- border:1px solid #d1d5db;margin-bottom:.6rem
+/* ===== TOAST ===== */
+.toast{
+position:fixed;right:20px;bottom:20px;
+background:#111;color:#fff;padding:1rem 1.4rem;
+border-radius:16px;opacity:0;transform:translateY(20px);
+transition:.3s;z-index:999
 }
+.toast.show{opacity:1;transform:none}
 
-button.primary{
- background:var(--primary);color:#fff;border:none;
- border-radius:999px;padding:.8rem 2rem;font-weight:700
+/* ===== ONBOARDING ===== */
+#onboarding{
+position:fixed;inset:0;background:rgba(0,0,0,.65);
+display:flex;align-items:center;justify-content:center;
+z-index:1000
 }
-button.secondary{
- background:var(--green);color:#fff;border:none;
- border-radius:999px;padding:.6rem 1.6rem;font-weight:700
+.onboard-box{
+background:#fff;border-radius:24px;padding:2rem;
+max-width:520px;width:90%;text-align:center
 }
+.step{display:none}
+.step.active{display:block}
+.step h2{margin-top:0}
+.step p{color:#555}
 
-.summary{
- white-space:pre-line;background:#fff1f2;
- padding:1rem;border-radius:14px;font-weight:600
-}
 </style>
 </head>
 
@@ -61,181 +67,148 @@ button.secondary{
 
 <header>
 <div class="container">
-<nav>
-<div>
-<a href="#buy">ซื้อสลาก</a>
-<a href="#history">ประวัติ</a>
-</div>
-
-<div class="wallet">
-<button onclick="connectWallet()">Connect MetaMask</button>
-<select onchange="switchNetwork(this.value)">
-<option value="">Network</option>
-<option value="mainnet">KUB Mainnet</option>
-<option value="testnet">KUB Testnet</option>
-</select>
-<span id="addr" class="pill" style="display:none"></span>
-<span id="netLabel" class="pill" style="display:none"></span>
-<span id="bal" class="pill" style="display:none"></span>
-</div>
-</nav>
+<h2>🎄 Lottery Web3 – Bitkub Chain</h2>
 </div>
 </header>
 
 <div class="container">
 
-<section id="buy" class="card">
-<h2>ซื้อสลาก</h2>
-<input id="manualNum" placeholder="เลข 2 หรือ 3 ตัว">
-<input id="manualQty" type="number" min="1" value="1">
-<button class="secondary" onclick="addManual()">เพิ่ม</button>
+<div class="card">
+<h3>Wallet</h3>
+<div class="wallet">
+<button class="primary" onclick="connectWallet()">Connect MetaMask</button>
+<button class="ghost" onclick="addMainnet()">➕ เพิ่ม KUB Mainnet</button>
+<button class="ghost" onclick="switchNetwork('testnet')">Testnet</button>
+<button class="ghost" onclick="switchNetwork('mainnet')">Mainnet</button>
+<span id="addr" class="pill" style="display:none"></span>
+<span id="net" class="pill" style="display:none"></span>
+<span id="bal" class="pill" style="display:none"></span>
+</div>
+</div>
 
-<div class="summary" id="summary">ยังไม่มีรายการ</div>
-<button class="primary" onclick="checkout()">ซื้อ (0.00000020 KUB)</button>
-</section>
+</div>
 
-<section id="history" class="card">
-<h2>ประวัติย้อนหลัง</h2>
-<div id="historyBox">ยังไม่มีประวัติ</div>
-</section>
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
 
+<!-- ONBOARDING -->
+<div id="onboarding">
+<div class="onboard-box">
+<div class="step active">
+<h2>👋 ยินดีต้อนรับ</h2>
+<p>เว็บนี้ใช้ MetaMask และ Bitkub Chain</p>
+<button class="primary" onclick="nextStep()">ถัดไป</button>
+</div>
+
+<div class="step">
+<h2>🦊 ติดตั้ง MetaMask</h2>
+<p>กรุณาติดตั้ง MetaMask บน Browser</p>
+<button class="primary" onclick="nextStep()">ติดตั้งแล้ว</button>
+</div>
+
+<div class="step">
+<h2>➕ เพิ่ม Bitkub Mainnet</h2>
+<p>กดปุ่มด้านล่างเพื่อเพิ่มเครือข่ายอัตโนมัติ</p>
+<button class="secondary" onclick="addMainnet()">เพิ่ม Mainnet</button>
+<br><br>
+<button class="ghost" onclick="nextStep()">ข้าม</button>
+</div>
+
+<div class="step">
+<h2>✅ พร้อมใช้งาน</h2>
+<p>คุณสามารถเชื่อมต่อ Wallet ได้แล้ว</p>
+<button class="primary" onclick="closeOnboard()">เริ่มใช้งาน</button>
+</div>
+</div>
 </div>
 
 <script>
 /* ===== CONFIG ===== */
-const RECEIVE_ADDRESS="0x5b54f26ddce0b5ff743358c0729b43c954a8e309";
-const PRICE_KUB="0.00000020";
-
-/* ===== NETWORK ===== */
 const MAINNET={
- chainId:"0x8E4",
- chainName:"Bitkub Chain",
- nativeCurrency:{name:"KUB",symbol:"KUB",decimals:18},
- rpcUrls:["https://rpc.bitkubchain.io"],
- blockExplorerUrls:["https://www.kubscan.com"]
+ chainId:'0x8E4',
+ chainName:'Bitkub Chain',
+ nativeCurrency:{name:'KUB',symbol:'KUB',decimals:18},
+ rpcUrls:['https://rpc.bitkubchain.io'],
+ blockExplorerUrls:['https://www.kubscan.com']
 };
 const TESTNET={
- chainId:"0x8E5",
- chainName:"Bitkub Chain Testnet",
- nativeCurrency:{name:"tKUB",symbol:"tKUB",decimals:18},
- rpcUrls:["https://rpc-testnet.bitkubchain.io"],
- blockExplorerUrls:["https://testnet.kubscan.com"]
+ chainId:'0x8E5',
+ chainName:'Bitkub Chain Testnet',
+ nativeCurrency:{name:'tKUB',symbol:'tKUB',decimals:18},
+ rpcUrls:['https://rpc-testnet.bitkubchain.io'],
+ blockExplorerUrls:['https://testnet.kubscan.com']
 };
 
-let provider, signer, account;
-let cart=[];
-let historyList=JSON.parse(localStorage.getItem("history")||"[]");
+let provider,signer,account;
+let step=0;
 
-/* ===== CONNECT WALLET ===== */
+/* ===== TOAST ===== */
+function toast(msg){
+ const t=document.getElementById('toast');
+ t.innerText=msg;
+ t.classList.add('show');
+ setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+/* ===== ONBOARD ===== */
+function nextStep(){
+ document.querySelectorAll('.step')[step].classList.remove('active');
+ step++;
+ document.querySelectorAll('.step')[step].classList.add('active');
+}
+function closeOnboard(){
+ document.getElementById('onboarding').style.display='none';
+ localStorage.setItem('onboarded','1');
+}
+if(localStorage.getItem('onboarded')) closeOnboard();
+
+/* ===== WALLET ===== */
 async function connectWallet(){
- if(!window.ethereum) return alert("กรุณาติดตั้ง MetaMask");
+ if(!window.ethereum){toast("กรุณาติดตั้ง MetaMask");return;}
+ await ethereum.request({method:'eth_requestAccounts'});
+ provider=new ethers.providers.Web3Provider(window.ethereum,'any');
+ signer=provider.getSigner();
+ account=await signer.getAddress();
+ updateUI();
+ toast("เชื่อมต่อ Wallet สำเร็จ");
+}
 
+async function addMainnet(){
+ if(!window.ethereum)return;
  try{
-  const accs=await ethereum.request({method:"eth_requestAccounts"});
-  account=accs[0];
-
-  provider=new ethers.providers.Web3Provider(window.ethereum,"any");
-  signer=provider.getSigner();
-
-  await updateWalletUI();
+  await ethereum.request({
+   method:'wallet_addEthereumChain',
+   params:[MAINNET]
+  });
+  toast("เพิ่ม Bitkub Mainnet สำเร็จ");
  }catch{
-  alert("ยกเลิกการเชื่อมต่อ");
+  toast("ยกเลิกการเพิ่ม Network");
  }
 }
 
 async function switchNetwork(v){
- if(!v) return;
- const p=v==="mainnet"?MAINNET:TESTNET;
+ const p=v==='mainnet'?MAINNET:TESTNET;
  try{
   await ethereum.request({
-   method:"wallet_switchEthereumChain",
+   method:'wallet_switchEthereumChain',
    params:[{chainId:p.chainId}]
   });
- }catch{
-  await ethereum.request({
-   method:"wallet_addEthereumChain",
-   params:[p]
-  });
- }
- provider=new ethers.providers.Web3Provider(window.ethereum,"any");
- signer=provider.getSigner();
- updateWalletUI();
-}
-
-async function updateWalletUI(){
- const network=await provider.getNetwork();
- const balance=await provider.getBalance(account);
-
- document.getElementById("addr").innerText=
-  account.slice(0,6)+"..."+account.slice(-4);
-
- document.getElementById("netLabel").innerText=
-  network.chainId===2276?"KUB Mainnet":"KUB Testnet";
-
- document.getElementById("bal").innerText=
-  ethers.utils.formatEther(balance)+
-  (network.chainId===2276?" KUB":" tKUB");
-
- addr.style.display=netLabel.style.display=bal.style.display="inline-block";
-}
-
-/* ===== BUY ===== */
-function addManual(){
- const n=manualNum.value.trim();
- const q=+manualQty.value;
- if(!/^\d{2,3}$/.test(n)||q<1) return alert("ข้อมูลไม่ถูกต้อง");
- cart.push({n,q});
- render();
-}
-
-function render(){
- if(!cart.length){summary.innerText="ยังไม่มีรายการ";return;}
- summary.innerText=
-  cart.map(i=>`${i.n} x ${i.q}`).join("\n")+
-  `\n\nราคา ${PRICE_KUB} KUB`;
-}
-
-/* ===== PAY ===== */
-async function checkout(){
- if(!cart.length) return alert("ไม่มีรายการ");
- if(!signer) return alert("กรุณาเชื่อมต่อ Wallet");
-
- try{
-  const tx=await signer.sendTransaction({
-   to:RECEIVE_ADDRESS,
-   value:ethers.utils.parseEther(PRICE_KUB)
-  });
-  await tx.wait();
-
-  historyList.push({
-   d:new Date().toLocaleString(),
-   tx:tx.hash,
-   i:cart
-  });
-  localStorage.setItem("history",JSON.stringify(historyList));
-  cart=[];render();renderHistory();
-  alert("ชำระเงินสำเร็จ");
- }catch{
-  alert("ยกเลิกหรือผิดพลาด");
+  toast("สลับเครือข่ายแล้ว");
+  updateUI();
+ }catch(e){
+  toast("ยังไม่ได้เพิ่ม Network");
  }
 }
 
-/* ===== HISTORY ===== */
-function renderHistory(){
- if(!historyList.length){
-  historyBox.innerText="ยังไม่มีประวัติ";return;
- }
- historyBox.innerHTML=historyList.map(h=>
-  `<b>${h.d}</b><br>
-   TX: ${h.tx}<br>
-   ${h.i.map(i=>i.n+" x "+i.q).join("<br>")}`
- ).join("<hr>");
-}
-renderHistory();
-
-if(window.ethereum){
- ethereum.on("accountsChanged",()=>location.reload());
- ethereum.on("chainChanged",()=>location.reload());
+async function updateUI(){
+ const netw=await provider.getNetwork();
+ addr.innerText=account.slice(0,6)+'...'+account.slice(-4);
+ addr.style.display='inline-block';
+ net.innerText=netw.chainId===2276?'KUB Mainnet':'KUB Testnet';
+ net.style.display='inline-block';
+ const b=await provider.getBalance(account);
+ bal.innerText=ethers.utils.formatEther(b)+(netw.chainId===2276?' KUB':' tKUB');
+ bal.style.display='inline-block';
 }
 </script>
 
