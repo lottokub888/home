@@ -1,406 +1,198 @@
 <!doctype html>
 <html lang="th">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KUB Lottery Platform (Prototype)</title>
-
-<!-- Ethers.js -->
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-
-<style>
-:root{
-  --red:#dc2626;
-  --red-dark:#991b1b;
-  --green:#16a34a;
-  --bg:#f8fafc;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
-  background:linear-gradient(180deg,#fff,#f1f5f9);
-  color:#111827;
-}
-header{
-  background:linear-gradient(90deg,#7f1d1d,#dc2626,#ef4444);
-  color:#fff;
-}
-nav{
-  max-width:1200px;
-  margin:auto;
-  padding:1rem;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
-nav a{
-  color:#fff;
-  text-decoration:none;
-  margin-right:1rem;
-  font-weight:600;
-}
-nav .right button{
-  background:#fff;
-  color:#dc2626;
-  border:none;
-  border-radius:999px;
-  padding:.5rem 1.2rem;
-  font-weight:700;
-  cursor:pointer;
-}
-
-.container{
-  max-width:1200px;
-  margin:auto;
-  padding:2rem 1rem;
-}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-  gap:1.5rem;
-}
-.card{
-  background:#fff;
-  border-radius:24px;
-  padding:1.8rem;
-  box-shadow:0 20px 40px rgba(0,0,0,.1);
-}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>แพลตฟอร์มสลากกินแบ่ง (อัปเกรดตาราง)</title>
+  <style>
+body{font-family:'Segoe UI',sans-serif;margin:0;background:#f7f7fb;color:#222}
+header{background:linear-gradient(90deg,#b91c1c,#ef4444);color:#fff;padding:1.2rem}
+nav a{color:#fff;margin-right:1rem;text-decoration:none;font-weight:600}
+.container{max-width:900px;margin:auto;padding:1.5rem}
+.card{background:#fff;border-radius:20px;padding:1.8rem;box-shadow:0 10px 25px rgba(0,0,0,.08);margin-bottom:1.5rem}
 h1,h2,h3{margin-top:0}
-
-.badge{
-  display:inline-block;
-  background:#fee2e2;
-  color:#991b1b;
-  padding:.3rem .8rem;
-  border-radius:999px;
-  font-size:.85rem;
-  font-weight:700;
-}
-
-input,select{
-  width:100%;
-  padding:.7rem .9rem;
-  border-radius:14px;
-  border:1px solid #d1d5db;
-  margin-bottom:.7rem;
-  font-size:1rem;
-}
-
-button.primary{
-  background:linear-gradient(90deg,#991b1b,#ef4444);
-  color:#fff;
-  border:none;
-  border-radius:999px;
-  padding:.8rem 2rem;
-  font-size:1rem;
-  font-weight:700;
-  cursor:pointer;
-}
-button.secondary{
-  background:#22c55e;
-  color:#fff;
-  border:none;
-  border-radius:999px;
-  padding:.6rem 1.6rem;
-  font-weight:700;
-  cursor:pointer;
-}
-button.ghost{
-  background:#e5e7eb;
-  border:none;
-  border-radius:999px;
-  padding:.6rem 1.6rem;
-  font-weight:700;
-  cursor:pointer;
-}
-
-.tabs{
-  display:flex;
-  gap:.6rem;
-  margin-bottom:1rem;
-}
-.tab{
-  flex:1;
-  border:none;
-  border-radius:999px;
-  padding:.6rem;
-  font-weight:700;
-  cursor:pointer;
-  background:#e5e7eb;
-}
-.tab.active{
-  background:var(--red);
-  color:#fff;
-}
-
-.summary{
-  margin-top:1rem;
-  background:#fef2f2;
-  border-radius:16px;
-  padding:1rem;
-  white-space:pre-line;
-  font-weight:600;
-}
-
-footer{
-  text-align:center;
-  padding:1.5rem;
-  color:#6b7280;
-}
+button{cursor:pointer;border:none;outline:none}
+button.primary{background:#b91c1c;color:#fff;border-radius:12px;padding:.9rem 1.8rem;font-size:1rem;font-weight:600}
+button.secondary{background:#22c55e;color:#fff;border-radius:12px;padding:.7rem 1.4rem;font-size:1rem;font-weight:600}
+button.ghost{background:#e5e7eb;color:#111;border-radius:12px;padding:.7rem 1.4rem;font-size:1rem;font-weight:600}
+.tabs{display:flex;gap:10px;margin-bottom:1rem}
+.tab{flex:1;padding:.8rem;border-radius:999px;background:#e5e7eb;font-weight:600;text-align:center}
+.tab.active{background:#ef4444;color:#fff}
+.summary{margin-top:1.2rem;padding:1rem;background:#fef2f2;border-radius:14px;font-weight:600;white-space:pre-line}
 
 /* modal */
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.6);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:100;
-}
-.modal-box{
-  background:#fff;
-  border-radius:24px;
-  padding:1.5rem;
-  width:90%;
-  max-width:520px;
-  max-height:80vh;
-  overflow:auto;
-}
-.num-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(64px,1fr));
-  gap:.5rem;
-}
-.num{
-  background:#f1f5f9;
-  padding:.7rem;
-  text-align:center;
-  border-radius:12px;
-  font-weight:700;
-  cursor:pointer;
-}
-.num.active{
-  background:#22c55e;
-  color:#fff;
-}
-.wallet-box{
-  background:#f1f5f9;
-  border-radius:18px;
-  padding:1rem;
-  font-weight:600;
-}
-</style>
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-box{background:#fff;border-radius:20px;padding:1.6rem;max-width:550px;width:90%;max-height:80vh;overflow:auto}
+.num-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:8px;margin-top:1rem}
+.num{background:#e5e7eb;border-radius:10px;padding:.8rem;text-align:center;font-weight:600;cursor:pointer;transition:.2s}
+.num:hover{background:#d1d5db}
+.num.selected{background:#22c55e;color:#fff}
+  </style>
 </head>
-
 <body>
 
 <header>
-<nav>
-  <div>
+  <nav class="container">
     <a href="#home">หน้าแรก</a>
-    <a href="#buy">ซื้อสลาก</a>
-    <a href="#check">เช็ครางวัล</a>
-    <a href="#about">เกี่ยวกับ</a>
-  </div>
-  <div class="right">
-    <button onclick="connectWallet()">Connect Wallet</button>
-  </div>
-</nav>
+    <a href="#buy">ซื้อเลข</a>
+  </nav>
 </header>
 
 <section id="home" class="container">
   <div class="card">
-    <h1>แพลตฟอร์มสลากกินแบ่ง (Prototype)</h1>
-    <span class="badge">KUB Mainnet</span>
-    <p>ระบบต้นแบบสำหรับเสนอหน่วยงาน / Startup  
-    เชื่อมต่อกระเป๋า KUB เพื่อแสดงยอดคงเหลือ</p>
-
-    <div class="wallet-box">
-      Wallet: <span id="addr">-</span><br>
-      Balance: <span id="bal">-</span>
-    </div>
+    <h2>ยินดีต้อนรับสู่แพลตฟอร์มสลาก</h2>
+    <p>กรุณาไปที่หน้า “ซื้อเลข” เพื่อเลือกสลากที่ต้องการ</p>
   </div>
 </section>
 
 <section id="buy" class="container">
-<div class="grid">
-
-<div class="card">
-  <h2>เลือกซื้อเลข</h2>
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('two',this)">2 ตัว</button>
-    <button class="tab" onclick="showTab('three',this)">3 ตัว</button>
-  </div>
-
-  <div id="two">
-    <input id="num2" maxlength="2" placeholder="เลข 2 ตัว เช่น 45">
-    <input id="qty2" type="number" min="1" value="1">
-    <button class="secondary" onclick="addItem(2)">ซื้อเพิ่ม</button>
-    <button class="ghost" onclick="openTable(2)">ตารางเลข</button>
-  </div>
-
-  <div id="three" style="display:none">
-    <input id="num3" maxlength="3" placeholder="เลข 3 ตัว เช่น 456">
-    <input id="qty3" type="number" min="1" value="1">
-    <button class="secondary" onclick="addItem(3)">ซื้อเพิ่ม</button>
-    <button class="ghost" onclick="openTable(3)">ตารางเลข</button>
-  </div>
-</div>
-
-<div class="card">
-  <h2>สรุปรายการ</h2>
-  <div class="summary" id="summary">ยังไม่มีรายการ</div>
-  <div style="text-align:center;margin-top:1rem">
-    <button class="primary" onclick="simulatePay()">ชำระเงิน (Simulation)</button>
-  </div>
-</div>
-
-</div>
-</section>
-
-<section id="check" class="container">
   <div class="card">
-    <h2>เช็ครางวัล</h2>
-    <input placeholder="กรอกเลขสลาก">
-    <button class="primary" onclick="alert('Demo เท่านั้น')">ตรวจรางวัล</button>
+    <h2>เลือกซื้อเลขสลาก</h2>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchBuyTab('manual',this)">กรอกเอง</div>
+      <div class="tab" onclick="switchBuyTab('table',this)">เลือกจากตาราง</div>
+    </div>
+
+    <div id="manualSection">
+      <h3>กรอกเลขสลาก</h3>
+      <input id="manualNum" placeholder="เลข 2 หรือ 3 ตัว">
+      <input id="manualQty" type="number" min="1" value="1">
+      <button class="secondary" onclick="addManual()">เพิ่มรายการ</button>
+    </div>
+
+    <div id="tableSection" style="display:none">
+      <h3>เลือกเลขจากตาราง</h3>
+      <button class="ghost" onclick="openNumberTable(2)">ตารางเลข 2 ตัว</button>
+      <button class="ghost" onclick="openNumberTable(3)">ตารางเลข 3 ตัว</button>
+    </div>
+
+    <div class="summary" id="summary">ยังไม่มีรายการ</div>
+    <div style="text-align:center;margin-top:1rem">
+      <button class="primary" onclick="simulateCheckout()">สรุป & ชำระ (Simulation)</button>
+    </div>
   </div>
 </section>
 
-<section id="about" class="container">
-  <div class="card">
-    <h2>ข้อกำหนด</h2>
-    <p>
-      เว็บไซต์นี้เป็นระบบต้นแบบ  
-      ไม่รับเงินจริง และไม่เกี่ยวข้องกับสำนักงานสลากกินแบ่งรัฐบาล
-    </p>
-  </div>
-</section>
-
-<footer>
-© KUB Lottery Platform – Prototype
+<footer class="container" style="text-align:center;color:#666;padding:1.5rem 0">
+  © Demo Lottery Platform – ใช้เพื่อการศึกษา
 </footer>
 
-<!-- MODAL -->
-<div class="modal" id="modal" onclick="closeModal(event)">
+<!-- Modal Grid -->
+<div id="modal" class="modal" onclick="closeModal(event)">
   <div class="modal-box">
     <h3 id="modalTitle"></h3>
-    <div class="num-grid" id="modalGrid"></div>
-    <input id="modalQty" type="number" min="1" value="1">
-    <button class="secondary" onclick="confirmTable()">เพิ่มรายการ</button>
+    <div id="modalGrid" class="num-grid"></div>
+    <input id="modalQty" type="number" min="1" value="1" placeholder="จำนวนชุด">
+    <div style="text-align:center;margin-top:1rem">
+      <button class="secondary" onclick="confirmSelection()">เพิ่มจากตาราง</button>
+    </div>
   </div>
 </div>
 
 <script>
-/* ================= WALLET ================= */
-const KUB_MAINNET = {
-  chainId: '0x44d',
-  chainName: 'Bitkub Chain',
-  nativeCurrency:{name:'KUB',symbol:'KUB',decimals:18},
-  rpcUrls:['https://rpc.bitkubchain.io'],
-  blockExplorerUrls:['https://www.kubscan.com']
-};
+let cart = [];
+let selectedNums = [];
+let currentTableType = 2;
 
-let provider, signer, account;
-
-async function connectWallet(){
-  if(!window.ethereum){alert('กรุณาติดตั้ง MetaMask');return;}
-  await ethereum.request({method:'eth_requestAccounts'});
-  try{
-    await ethereum.request({
-      method:'wallet_switchEthereumChain',
-      params:[{chainId:KUB_MAINNET.chainId}]
-    });
-  }catch{
-    await ethereum.request({
-      method:'wallet_addEthereumChain',
-      params:[KUB_MAINNET]
-    });
-  }
-  provider=new ethers.providers.Web3Provider(window.ethereum,'any');
-  signer=provider.getSigner();
-  account=await signer.getAddress();
-  document.getElementById('addr').innerText=
-    account.slice(0,6)+'...'+account.slice(-4);
-  refreshBalance();
-}
-
-async function refreshBalance(){
-  const bal=await provider.getBalance(account);
-  document.getElementById('bal').innerText=
-    ethers.utils.formatEther(bal)+' KUB';
-}
-
-/* ================= BUY LOGIC ================= */
-let cart=[];
-let tableType=2, tableSelected=[];
-
-function showTab(id,el){
-  document.getElementById('two').style.display=id==='two'?'block':'none';
-  document.getElementById('three').style.display=id==='three'?'block':'none';
+// สลับแสดงส่วนกรอกเอง / ตาราง
+function switchBuyTab(mode, btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
+  btn.classList.add('active');
+
+  document.getElementById('manualSection').style.display = mode==='manual'?'block':'none';
+  document.getElementById('tableSection').style.display = mode==='table'?'block':'none';
 }
 
-function addItem(type){
-  const num=type===2?num2.value:num3.value;
-  const qty=type===2?+qty2.value:+qty3.value;
-  if(num.length!==type||qty<1){alert('ข้อมูลไม่ถูกต้อง');return;}
-  cart.push({type,num,qty});
-  renderSummary();
+// เพิ่มแบบกรอกเอง
+function addManual(){
+  const num = document.getElementById('manualNum').value.trim();
+  const qty = +document.getElementById('manualQty').value;
+  if (!/^\d{2,3}$/.test(num) || qty < 1){
+    alert('กรุณากรอกเลขให้ถูกต้อง (2 หรือ 3 ตัว) และจำนวนให้ถูกต้อง');
+    return;
+  }
+  cart.push({num,qty});
+  updateSummary();
+  document.getElementById('manualNum').value='';
 }
 
-function renderSummary(){
-  if(cart.length===0){summary.innerText='ยังไม่มีรายการ';return;}
-  let t=0,s='';
-  cart.forEach(i=>{
-    const sum=i.qty*100;
-    t+=sum;
-    s+=`${i.type} ตัว ${i.num} x${i.qty} = ${sum} บาท\n`;
-  });
-  s+=`\nรวมทั้งหมด ${t} บาท`;
-  summary.innerText=s;
-}
+// เปิด modal ตาราง
+function openNumberTable(type){
+  currentTableType = type;
+  selectedNums = [];
 
-function simulatePay(){
-  if(cart.length===0){alert('ยังไม่มีรายการ');return;}
-  alert('Simulation Payment สำเร็จ (Mainnet)');
-}
+  document.getElementById('modalTitle').innerText = `ตารางเลข ${type} ตัว`;
+  const grid = document.getElementById('modalGrid');
+  grid.innerHTML = '';
 
-/* ================= TABLE ================= */
-function openTable(type){
-  tableType=type;tableSelected=[];
-  modal.style.display='flex';
-  modalTitle.innerText='ตารางเลข '+type+' ตัว';
-  modalGrid.innerHTML='';
-  const max=type===2?100:1000;
-  for(let i=0;i<max;i++){
-    const n=String(i).padStart(type,'0');
-    const d=document.createElement('div');
-    d.className='num';
-    d.innerText=n;
-    d.onclick=()=>{d.classList.toggle('active');
-      tableSelected.includes(n)?
-      tableSelected.splice(tableSelected.indexOf(n),1):
-      tableSelected.push(n);
+  const max = type===2 ? 100 : 1000;
+  for (let i=0; i < max; i++){
+    const n = String(i).padStart(type, '0');
+    const div = document.createElement('div');
+    div.className = 'num';
+    div.innerText = n;
+    div.onclick = ()=>{
+      if (div.classList.contains('selected')){
+        div.classList.remove('selected');
+        selectedNums = selectedNums.filter(x=>x!==n);
+      } else {
+        div.classList.add('selected');
+        selectedNums.push(n);
+      }
     };
-    modalGrid.appendChild(d);
+    grid.appendChild(div);
+  }
+
+  document.getElementById('modal').style.display = 'flex';
+}
+
+// ยืนยันเลือกจากตาราง
+function confirmSelection(){
+  const qty = +document.getElementById('modalQty').value;
+  if (selectedNums.length === 0 || qty < 1){
+    alert('กรุณาเลือกเลขและจำนวนชุด');
+    return;
+  }
+  selectedNums.forEach(n=>{
+    cart.push({num:n,qty});
+  });
+  closeModal();
+  updateSummary();
+}
+
+// ปิด modal
+function closeModal(e){
+  if (e.target.id==='modal'){
+    document.getElementById('modal').style.display='none';
   }
 }
 
-function confirmTable(){
-  const q=+modalQty.value;
-  if(q<1||tableSelected.length===0){alert('เลือกเลข');return;}
-  tableSelected.forEach(n=>cart.push({type:tableType,num:n,qty:q}));
-  modal.style.display='none';
-  renderSummary();
+// อัปเดตสรุปรายการ
+function updateSummary(){
+  if (cart.length === 0){
+    document.getElementById('summary').innerText='ยังไม่มีรายการ';
+    return;
+  }
+  let text = '';
+  let total=0;
+  cart.forEach(item=>{
+    const cost = item.qty*100;
+    total += cost;
+    text += `${item.num} x ${item.qty} = ${cost} บาท\n`;
+  });
+  text += `\nรวมทั้งหมด: ${total} บาท`;
+  document.getElementById('summary').innerText = text;
 }
 
-function closeModal(e){
-  if(e.target.id==='modal')modal.style.display='none';
+// Simulation checkout
+function simulateCheckout(){
+  if (cart.length === 0){
+    alert('ยังไม่มีรายการ');
+    return;
+  }
+  alert('Simulation: รายการจะถูกส่งเพื่อชำระจริง');
 }
 </script>
-
 </body>
 </html>
